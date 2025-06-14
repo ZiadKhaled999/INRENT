@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -32,9 +31,23 @@ const JoinHousehold = () => {
   const [requesting, setRequesting] = useState(false);
   const [alreadyMember, setAlreadyMember] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
+  const [invalidId, setInvalidId] = useState(false);
+
+  // Helper function to validate UUID format
+  const isValidUUID = (uuid: string) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+  };
 
   useEffect(() => {
     if (id) {
+      // Check if the ID is a valid UUID before making any requests
+      if (!isValidUUID(id)) {
+        console.log('Invalid household ID format:', id);
+        setInvalidId(true);
+        setLoading(false);
+        return;
+      }
       fetchHousehold();
     }
   }, [id]);
@@ -42,14 +55,22 @@ const JoinHousehold = () => {
   useEffect(() => {
     if (user) {
       setDisplayName(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
-      if (id) {
+      if (id && isValidUUID(id)) {
         checkMembershipStatus();
       }
     }
   }, [user, id]);
 
   const fetchHousehold = async () => {
+    if (!id || !isValidUUID(id)) {
+      setInvalidId(true);
+      setLoading(false);
+      return;
+    }
+
     try {
+      console.log('Fetching household with ID:', id);
+      
       // Fetch household data without requiring authentication for viewing
       const { data: householdData, error: householdError } = await supabase
         .from('households')
@@ -59,7 +80,11 @@ const JoinHousehold = () => {
 
       if (householdError) {
         console.error('Error fetching household:', householdError);
-        throw new Error('Household not found');
+        if (householdError.code === 'PGRST116') {
+          // No rows returned
+          throw new Error('Household not found');
+        }
+        throw householdError;
       }
 
       // Get member count
@@ -75,6 +100,7 @@ const JoinHousehold = () => {
 
     } catch (error: any) {
       console.error('Error fetching household:', error);
+      setHousehold(null);
       toast({
         title: "Failed to load household",
         description: "This household may not exist or the link is invalid.",
@@ -86,7 +112,7 @@ const JoinHousehold = () => {
   };
 
   const checkMembershipStatus = async () => {
-    if (!user?.id || !id) return;
+    if (!user?.id || !id || !isValidUUID(id)) return;
 
     try {
       // Check if user is already a member
@@ -163,6 +189,28 @@ const JoinHousehold = () => {
           <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
           <p className="text-gray-600">Loading household...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (invalidId || (!household && !loading)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="text-center py-8">
+            <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Invalid Household Link</h2>
+            <p className="text-gray-600 mb-6">
+              {invalidId ? 
+                "This link appears to be invalid or malformed." : 
+                "This household doesn't exist or the link is invalid."
+              }
+            </p>
+            <Button onClick={() => navigate('/')}>
+              Go to Rentable
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
