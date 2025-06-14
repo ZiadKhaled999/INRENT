@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
 import RenterDashboard from './RenterDashboard';
 import ResidentDashboard from './ResidentDashboard';
+import EmailVerificationNotice from '@/components/EmailVerificationNotice';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -56,9 +57,19 @@ const Dashboard = () => {
 
   // Render appropriate dashboard based on user type
   if (userProfile?.user_type === 'renter') {
-    return <RenterDashboard />;
+    return (
+      <div>
+        <EmailVerificationNotice />
+        <RenterDashboard />
+      </div>
+    );
   } else if (userProfile?.user_type === 'resident') {
-    return <ResidentDashboard />;
+    return (
+      <div>
+        <EmailVerificationNotice />
+        <ResidentDashboard />
+      </div>
+    );
   } else {
     // Fallback: redirect to role selection if somehow we get here
     navigate('/role-selection');

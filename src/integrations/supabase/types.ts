@@ -17,8 +17,11 @@ export type Database = {
           id: string
           paid_at: string | null
           payment_method: string | null
+          payment_proof_url: string | null
           status: string | null
           user_id: string
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           amount: number
@@ -27,8 +30,11 @@ export type Database = {
           id?: string
           paid_at?: string | null
           payment_method?: string | null
+          payment_proof_url?: string | null
           status?: string | null
           user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           amount?: number
@@ -37,8 +43,11 @@ export type Database = {
           id?: string
           paid_at?: string | null
           payment_method?: string | null
+          payment_proof_url?: string | null
           status?: string | null
           user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
           {
@@ -46,6 +55,13 @@ export type Database = {
             columns: ["bill_id"]
             isOneToOne: false
             referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bill_splits_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -81,6 +97,54 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "bills_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_invitations: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          email: string
+          expires_at: string
+          household_id: string
+          id: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          email: string
+          expires_at: string
+          household_id: string
+          id?: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          email?: string
+          expires_at?: string
+          household_id?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_invitations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_invitations_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
@@ -156,6 +220,44 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -191,7 +293,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_created_households: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          household_id: string
+        }[]
+      }
+      get_user_households: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          household_id: string
+        }[]
+      }
+      is_household_creator: {
+        Args: { target_household_id: string }
+        Returns: boolean
+      }
+      is_household_member: {
+        Args: { target_household_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
