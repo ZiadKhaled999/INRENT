@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -28,18 +29,40 @@ const Register = () => {
       return;
     }
 
+    if (password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // TODO: Implement Supabase authentication
-      console.log('Registration attempt:', { name, email, password });
-      
-      // Simulate registration for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          }
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Registration failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Welcome to Rentable!",
-        description: "Your account has been created successfully.",
+        description: "Your account has been created successfully. Please check your email to confirm your account.",
       });
       
       navigate('/dashboard');
@@ -108,10 +131,11 @@ const Register = () => {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Create a password"
+                  placeholder="Create a password (min 6 characters)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                   className="h-11"
                 />
               </div>

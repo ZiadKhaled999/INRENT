@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -19,12 +20,20 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // TODO: Implement Supabase authentication
-      console.log('Login attempt:', { email, password });
-      
-      // Simulate login for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Welcome back!",
         description: "Successfully logged in to Rentable.",
@@ -107,9 +116,6 @@ const Login = () => {
                   Sign up
                 </Link>
               </p>
-              <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
-                Forgot your password?
-              </Link>
             </div>
           </CardContent>
         </Card>

@@ -9,7 +9,177 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bill_splits: {
+        Row: {
+          amount: number
+          bill_id: string
+          created_at: string | null
+          id: string
+          paid_at: string | null
+          payment_method: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          bill_id: string
+          created_at?: string | null
+          id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          bill_id?: string
+          created_at?: string | null
+          id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bill_splits_bill_id_fkey"
+            columns: ["bill_id"]
+            isOneToOne: false
+            referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bills: {
+        Row: {
+          created_at: string | null
+          due_date: string
+          household_id: string
+          id: string
+          month_year: string
+          status: string | null
+          total_amount: number
+        }
+        Insert: {
+          created_at?: string | null
+          due_date: string
+          household_id: string
+          id?: string
+          month_year: string
+          status?: string | null
+          total_amount: number
+        }
+        Update: {
+          created_at?: string | null
+          due_date?: string
+          household_id?: string
+          id?: string
+          month_year?: string
+          status?: string | null
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bills_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_members: {
+        Row: {
+          display_name: string
+          email: string
+          household_id: string
+          id: string
+          joined_at: string | null
+          user_id: string
+        }
+        Insert: {
+          display_name: string
+          email: string
+          household_id: string
+          id?: string
+          joined_at?: string | null
+          user_id: string
+        }
+        Update: {
+          display_name?: string
+          email?: string
+          household_id?: string
+          id?: string
+          joined_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_members_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      households: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          due_day: number
+          id: string
+          name: string
+          rent_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          due_day: number
+          id?: string
+          name: string
+          rent_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          due_day?: number
+          id?: string
+          name?: string
+          rent_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
