@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,17 @@ interface Member {
   user_id: string;
 }
 
+interface BillSplit {
+  id: string;
+  user_id: string;
+  amount: number;
+  status: string;
+  user_profile?: {
+    full_name?: string;
+    email?: string;
+  };
+}
+
 interface Bill {
   id: string;
   month_year: string;
@@ -31,14 +43,6 @@ interface Bill {
   due_date: string;
   status: string;
   splits: BillSplit[];
-}
-
-interface BillSplit {
-  id: string;
-  user_id: string;
-  amount: number;
-  status: string;
-  member: Member;
 }
 
 const HouseholdDetail = () => {
@@ -80,7 +84,7 @@ const HouseholdDetail = () => {
       if (membersError) throw membersError;
       setMembers(membersData);
 
-      // Fetch bills with splits
+      // Fetch bills with splits and profile data
       const { data: billsData, error: billsError } = await supabase
         .from('bills')
         .select(`
@@ -88,7 +92,6 @@ const HouseholdDetail = () => {
           bill_splits (
             *,
             profiles:user_id (
-              id,
               full_name,
               email
             )
@@ -98,7 +101,24 @@ const HouseholdDetail = () => {
         .order('created_at', { ascending: false });
 
       if (billsError) throw billsError;
-      setBills(billsData || []);
+
+      // Transform the data to match our Bill interface
+      const transformedBills = billsData?.map(bill => ({
+        id: bill.id,
+        month_year: bill.month_year,
+        total_amount: bill.total_amount,
+        due_date: bill.due_date,
+        status: bill.status,
+        splits: bill.bill_splits?.map((split: any) => ({
+          id: split.id,
+          user_id: split.user_id,
+          amount: split.amount,
+          status: split.status,
+          user_profile: split.profiles
+        })) || []
+      })) || [];
+
+      setBills(transformedBills);
 
     } catch (error: any) {
       console.error('Error fetching household data:', error);
@@ -407,8 +427,8 @@ const HouseholdDetail = () => {
                           <TableRow key={split.id}>
                             <TableCell>
                               <div>
-                                <p className="font-medium">{split.member?.full_name || 'Unknown'}</p>
-                                <p className="text-sm text-gray-600">{split.member?.email}</p>
+                                <p className="font-medium">{split.user_profile?.full_name || 'Unknown'}</p>
+                                <p className="text-sm text-gray-600">{split.user_profile?.email}</p>
                               </div>
                             </TableCell>
                             <TableCell>${split.amount.toFixed(2)}</TableCell>
