@@ -21,15 +21,28 @@ const RenterDashboard = () => {
   const [households, setHouseholds] = useState<Household[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchRenterData();
-  }, []);
+    // Only fetch data when user is loaded and authenticated
+    if (!authLoading && user?.id) {
+      fetchRenterData();
+    } else if (!authLoading && !user) {
+      // User is not authenticated, redirect to login
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
 
   const fetchRenterData = async () => {
+    if (!user?.id) {
+      console.error('User ID is not available');
+      return;
+    }
+
     try {
+      console.log('Fetching renter data for user:', user.id);
+      
       // Fetch households created by this renter
       const { data: householdsData, error: householdsError } = await supabase
         .from('households')
@@ -41,11 +54,16 @@ const RenterDashboard = () => {
           created_at,
           household_members (count)
         `)
-        .eq('created_by', user?.id)
+        .eq('created_by', user.id)
         .order('created_at', { ascending: false });
 
-      if (householdsError) throw householdsError;
+      if (householdsError) {
+        console.error('Error fetching households:', householdsError);
+        throw householdsError;
+      }
 
+      console.log('Households data:', householdsData);
+      
       // Transform data to include member count
       const transformedHouseholds = householdsData?.map(household => ({
         ...household,
@@ -68,7 +86,8 @@ const RenterDashboard = () => {
 
   const totalRentCollected = households.reduce((sum, h) => sum + Number(h.rent_amount), 0);
 
-  if (loading) {
+  // Show loading while auth is loading
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -77,6 +96,11 @@ const RenterDashboard = () => {
         </div>
       </div>
     );
+  }
+
+  // If no user after auth loading is complete, return null (will redirect)
+  if (!user) {
+    return null;
   }
 
   return (

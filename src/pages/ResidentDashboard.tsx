@@ -34,15 +34,28 @@ const ResidentDashboard = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchResidentData();
-  }, []);
+    // Only fetch data when user is loaded and authenticated
+    if (!authLoading && user?.id) {
+      fetchResidentData();
+    } else if (!authLoading && !user) {
+      // User is not authenticated, redirect to login
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
 
   const fetchResidentData = async () => {
+    if (!user?.id) {
+      console.error('User ID is not available');
+      return;
+    }
+
     try {
+      console.log('Fetching resident data for user:', user.id);
+      
       // Fetch households user is a member of
       const { data: memberData, error: memberError } = await supabase
         .from('household_members')
@@ -54,10 +67,14 @@ const ResidentDashboard = () => {
             due_day
           )
         `)
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id);
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Error fetching household members:', memberError);
+        throw memberError;
+      }
 
+      console.log('Member data:', memberData);
       const householdsData = memberData?.map(m => m.household).filter(Boolean) || [];
       setHouseholds(householdsData as Household[]);
 
@@ -76,11 +93,16 @@ const ResidentDashboard = () => {
             )
           )
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (paymentsError) throw paymentsError;
+      if (paymentsError) {
+        console.error('Error fetching payments:', paymentsError);
+        throw paymentsError;
+      }
+
+      console.log('Payments data:', paymentsData);
       setPayments(paymentsData || []);
 
     } catch (error: any) {
@@ -96,6 +118,15 @@ const ResidentDashboard = () => {
   };
 
   const markPaymentPaid = async (paymentId: string) => {
+    if (!user?.id) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to mark payments as paid.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('bill_splits')
@@ -104,7 +135,8 @@ const ResidentDashboard = () => {
           paid_at: new Date().toISOString(),
           payment_method: 'manual'
         })
-        .eq('id', paymentId);
+        .eq('id', paymentId)
+        .eq('user_id', user.id); // Ensure user can only update their own payments
 
       if (error) throw error;
 
@@ -128,7 +160,8 @@ const ResidentDashboard = () => {
     .filter(p => p.status === 'pending')
     .reduce((sum, p) => sum + Number(p.amount), 0);
 
-  if (loading) {
+  // Show loading while auth is loading
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -137,6 +170,11 @@ const ResidentDashboard = () => {
         </div>
       </div>
     );
+  }
+
+  // If no user after auth loading is complete, return null (will redirect)
+  if (!user) {
+    return null;
   }
 
   return (
