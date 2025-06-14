@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import RoleSelection from "./pages/RoleSelection";
 import CreateHousehold from "./pages/CreateHousehold";
 import HouseholdDetail from "./pages/HouseholdDetail";
 import JoinHousehold from "./pages/JoinHousehold";
@@ -27,6 +28,11 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/join/:id" element={<JoinHousehold />} />
+          <Route path="/role-selection" element={
+            <ProtectedRoute>
+              <RoleSelection />
+            </ProtectedRoute>
+          } />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />

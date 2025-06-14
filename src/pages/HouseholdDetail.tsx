@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -54,14 +53,30 @@ const HouseholdDetail = () => {
   const [household, setHousehold] = useState<Household | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [inviteEmail, setInviteEmail] = useState('');
 
   useEffect(() => {
     if (id) {
       fetchHouseholdData();
+      fetchUserProfile();
     }
   }, [id]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_type')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error: any) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const fetchHouseholdData = async () => {
     try {
@@ -249,6 +264,9 @@ const HouseholdDetail = () => {
     }
   };
 
+  const isRenter = userProfile?.user_type === 'renter';
+  const isCreator = household?.created_by === user?.id;
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -340,19 +358,21 @@ const HouseholdDetail = () => {
           </Card>
         </div>
 
-        {/* Invite Section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Share className="w-5 h-5 text-blue-600" />
-              <CardTitle>Invite Roommates</CardTitle>
-            </div>
-            <CardDescription>Share this link to invite roommates. No signup required initially!</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <InviteLink householdId={household.id} householdName={household.name} />
-          </CardContent>
-        </Card>
+        {/* Invite Section - Only show to renters/creators */}
+        {(isRenter || isCreator) && (
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <Share className="w-5 h-5 text-blue-600" />
+                <CardTitle>Invite Roommates</CardTitle>
+              </div>
+              <CardDescription>Share this link to invite roommates. No signup required initially!</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <InviteLink householdId={household.id} householdName={household.name} />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Members Section */}
         <Card className="mb-8">
@@ -368,9 +388,14 @@ const HouseholdDetail = () => {
                     <p className="font-medium">{member.display_name}</p>
                     <p className="text-sm text-gray-600">{member.email}</p>
                   </div>
-                  {member.user_id === user?.id && (
-                    <span className="text-sm text-blue-600 font-medium">You</span>
-                  )}
+                  <div className="flex items-center space-x-2">
+                    {member.user_id === user?.id && (
+                      <span className="text-sm text-blue-600 font-medium">You</span>
+                    )}
+                    {member.user_id === household.created_by && (
+                      <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">Renter</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -385,10 +410,13 @@ const HouseholdDetail = () => {
                 <CardTitle>Bills & Payments</CardTitle>
                 <CardDescription>Track monthly rent splits</CardDescription>
               </div>
-              <Button onClick={createCurrentBill}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create This Month's Bill
-              </Button>
+              {/* Only renters/creators can create bills */}
+              {(isRenter || isCreator) && (
+                <Button onClick={createCurrentBill}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create This Month's Bill
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent>
@@ -396,7 +424,12 @@ const HouseholdDetail = () => {
               <div className="text-center py-8">
                 <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No bills yet</h3>
-                <p className="text-gray-600 mb-6">Create your first monthly bill to start splitting rent</p>
+                <p className="text-gray-600 mb-6">
+                  {isRenter || isCreator 
+                    ? "Create your first monthly bill to start splitting rent" 
+                    : "Wait for the renter to create this month's bill"
+                  }
+                </p>
               </div>
             ) : (
               <div className="space-y-6">

@@ -95,6 +95,7 @@ export type Database = {
           household_id: string
           id: string
           joined_at: string | null
+          role: string | null
           user_id: string
         }
         Insert: {
@@ -103,6 +104,7 @@ export type Database = {
           household_id: string
           id?: string
           joined_at?: string | null
+          role?: string | null
           user_id: string
         }
         Update: {
@@ -111,6 +113,7 @@ export type Database = {
           household_id?: string
           id?: string
           joined_at?: string | null
+          role?: string | null
           user_id?: string
         }
         Relationships: [
@@ -161,6 +164,7 @@ export type Database = {
           full_name: string | null
           id: string
           updated_at: string | null
+          user_type: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -169,6 +173,7 @@ export type Database = {
           full_name?: string | null
           id: string
           updated_at?: string | null
+          user_type?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -177,6 +182,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string | null
+          user_type?: string | null
         }
         Relationships: []
       }
