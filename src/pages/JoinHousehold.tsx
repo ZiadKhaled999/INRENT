@@ -40,16 +40,22 @@ const JoinHousehold = () => {
   };
 
   useEffect(() => {
-    if (id) {
-      // Check if the ID is a valid UUID before making any requests
-      if (!isValidUUID(id)) {
-        console.log('Invalid household ID format:', id);
-        setInvalidId(true);
-        setLoading(false);
-        return;
-      }
-      fetchHousehold();
+    // If no ID is provided or ID is invalid, show error immediately
+    if (!id) {
+      console.log('No household ID provided');
+      setInvalidId(true);
+      setLoading(false);
+      return;
     }
+    
+    if (!isValidUUID(id)) {
+      console.log('Invalid household ID format:', id);
+      setInvalidId(true);
+      setLoading(false);
+      return;
+    }
+    
+    fetchHousehold();
   }, [id]);
 
   useEffect(() => {
@@ -201,14 +207,21 @@ const JoinHousehold = () => {
             <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Invalid Household Link</h2>
             <p className="text-gray-600 mb-6">
-              {invalidId ? 
-                "This link appears to be invalid or malformed." : 
-                "This household doesn't exist or the link is invalid."
+              {!id ? 
+                "No household ID was provided in the link." :
+                !isValidUUID(id) ? 
+                  "This link appears to be invalid or malformed." : 
+                  "This household doesn't exist or the link is invalid."
               }
             </p>
-            <Button onClick={() => navigate('/')}>
-              Go to Rentable
-            </Button>
+            <div className="space-y-3">
+              <Button onClick={() => navigate('/')} className="w-full">
+                Go to Rentable
+              </Button>
+              <p className="text-sm text-gray-500">
+                Need a valid invite link? Ask your renter to share the correct household invitation link.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
