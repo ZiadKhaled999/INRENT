@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, Users, DollarSign, CheckCircle, AlertTriangle } from "lucide-react";
+import { Home, Users, DollarSign, CheckCircle } from "lucide-react";
 
 interface Household {
   id: string;
@@ -16,52 +17,50 @@ interface Household {
   rent_amount: number;
   due_day: number;
   member_count: number;
-}
-
-interface Invitation {
-  id: string;
-  email: string;
-  expires_at: string;
-  used_at: string | null;
+  created_by: string;
 }
 
 const JoinHousehold = () => {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   
   const [household, setHousehold] = useState<Household | null>(null);
-  const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(true);
-  const [joining, setJoining] = useState(false);
-  const [invitationStatus, setInvitationStatus] = useState<'valid' | 'expired' | 'used' | 'invalid'>('valid');
+  const [requesting, setRequesting] = useState(false);
+  const [alreadyMember, setAlreadyMember] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
 
   useEffect(() => {
     if (id) {
-      fetchHouseholdAndInvitation();
+      fetchHousehold();
     }
-  }, [id, token]);
+  }, [id]);
 
   useEffect(() => {
     if (user) {
       setDisplayName(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
+      if (id) {
+        checkMembershipStatus();
+      }
     }
-  }, [user]);
+  }, [user, id]);
 
-  const fetchHouseholdAndInvitation = async () => {
+  const fetchHousehold = async () => {
     try {
-      // Fetch household data
+      // Fetch household data without requiring authentication for viewing
       const { data: householdData, error: householdError } = await supabase
         .from('households')
         .select('*')
         .eq('id', id)
         .single();
 
-      if (householdError) throw householdError;
+      if (householdError) {
+        console.error('Error fetching household:', householdError);
+        throw new Error('Household not found');
+      }
 
       // Get member count
       const { count } = await supabase
@@ -74,38 +73,11 @@ const JoinHousehold = () => {
         member_count: count || 0
       });
 
-      // If there's a token, validate the invitation
-      if (token) {
-        const { data: invitationData, error: invitationError } = await supabase
-          .from('household_invitations')
-          .select('*')
-          .eq('household_id', id)
-          .eq('token', token)
-          .single();
-
-        if (invitationError) {
-          setInvitationStatus('invalid');
-        } else {
-          setInvitation(invitationData);
-          
-          // Check if invitation is expired
-          const expiresAt = new Date(invitationData.expires_at);
-          const now = new Date();
-          
-          if (now > expiresAt) {
-            setInvitationStatus('expired');
-          } else if (invitationData.used_at) {
-            setInvitationStatus('used');
-          } else {
-            setInvitationStatus('valid');
-          }
-        }
-      }
     } catch (error: any) {
       console.error('Error fetching household:', error);
       toast({
         title: "Failed to load household",
-        description: "This invitation may be invalid or expired.",
+        description: "This household may not exist or the link is invalid.",
         variant: "destructive",
       });
     } finally {
@@ -113,69 +85,74 @@ const JoinHousehold = () => {
     }
   };
 
-  const joinHousehold = async () => {
-    if (!household || !user || !displayName) return;
+  const checkMembershipStatus = async () => {
+    if (!user?.id || !id) return;
 
-    setJoining(true);
     try {
       // Check if user is already a member
       const { data: existingMember } = await supabase
         .from('household_members')
         .select('id')
-        .eq('household_id', household.id)
+        .eq('household_id', id)
         .eq('user_id', user.id)
         .single();
 
       if (existingMember) {
-        toast({
-          title: "Already a member",
-          description: "You're already a member of this household.",
-        });
-        navigate(`/household/${household.id}`);
+        setAlreadyMember(true);
         return;
       }
 
-      // Add user as member
-      const { error: memberError } = await supabase
-        .from('household_members')
+      // Check if user has already sent a request
+      const { data: existingRequest } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', household?.created_by)
+        .eq('type', 'join_request')
+        .ilike('message', `%${user.email}%`)
+        .ilike('message', `%${id}%`)
+        .single();
+
+      if (existingRequest) {
+        setRequestSent(true);
+      }
+    } catch (error) {
+      console.error('Error checking membership status:', error);
+    }
+  };
+
+  const requestToJoin = async () => {
+    if (!household || !user || !displayName) return;
+
+    setRequesting(true);
+    try {
+      // Create a notification for the household creator
+      const { error: notificationError } = await supabase
+        .from('notifications')
         .insert({
-          household_id: household.id,
-          user_id: user.id,
-          display_name: displayName,
-          email: user.email || '',
-          role: 'resident'
+          user_id: household.created_by,
+          type: 'join_request',
+          title: `New Join Request for ${household.name}`,
+          message: `${displayName} (${user.email}) wants to join your household. Household ID: ${household.id}, User ID: ${user.id}, Display Name: ${displayName}`,
+          read: false
         });
 
-      if (memberError) throw memberError;
+      if (notificationError) throw notificationError;
 
-      // Mark invitation as used if there was one
-      if (invitation && token) {
-        const { error: invitationError } = await supabase
-          .from('household_invitations')
-          .update({ used_at: new Date().toISOString() })
-          .eq('id', invitation.id);
-
-        if (invitationError) {
-          console.error('Error marking invitation as used:', invitationError);
-          // Don't throw - user successfully joined
-        }
-      }
-
+      setRequestSent(true);
       toast({
-        title: "Welcome to the household!",
-        description: `You've successfully joined ${household.name}.`,
+        title: "Request sent!",
+        description: `Your request to join ${household.name} has been sent to the renter for approval.`,
       });
 
-      navigate(`/household/${household.id}`);
     } catch (error: any) {
-      console.error('Error joining household:', error);
+      console.error('Error sending join request:', error);
       toast({
-        title: "Failed to join household",
+        title: "Failed to send request",
         description: error.message,
         variant: "destructive",
       });
     } finally {
-      setJoining(false);
+      setRequesting(false);
     }
   };
 
@@ -184,7 +161,7 @@ const JoinHousehold = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading invitation...</p>
+          <p className="text-gray-600">Loading household...</p>
         </div>
       </div>
     );
@@ -196,8 +173,8 @@ const JoinHousehold = () => {
         <Card className="w-full max-w-md">
           <CardContent className="text-center py-8">
             <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Invalid Invitation</h2>
-            <p className="text-gray-600 mb-6">This invitation link is invalid or has expired.</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Household Not Found</h2>
+            <p className="text-gray-600 mb-6">This household doesn't exist or the link is invalid.</p>
             <Button onClick={() => navigate('/')}>
               Go to Rentable
             </Button>
@@ -206,50 +183,6 @@ const JoinHousehold = () => {
       </div>
     );
   }
-
-  // Show invitation status alerts
-  const renderInvitationAlert = () => {
-    if (!token) return null;
-
-    switch (invitationStatus) {
-      case 'expired':
-        return (
-          <Alert className="mb-4 border-red-200 bg-red-50">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-700">
-              This invitation has expired. Please request a new invitation from the household owner.
-            </AlertDescription>
-          </Alert>
-        );
-      case 'used':
-        return (
-          <Alert className="mb-4 border-amber-200 bg-amber-50">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-700">
-              This invitation has already been used. If you need access, please request a new invitation.
-            </AlertDescription>
-          </Alert>
-        );
-      case 'invalid':
-        return (
-          <Alert className="mb-4 border-red-200 bg-red-50">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-700">
-              This invitation is invalid. Please check the link or request a new invitation.
-            </AlertDescription>
-          </Alert>
-        );
-      case 'valid':
-        return (
-          <Alert className="mb-4 border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-700">
-              Valid invitation! You can join this household.
-            </AlertDescription>
-          </Alert>
-        );
-    }
-  };
 
   if (!user) {
     return (
@@ -261,8 +194,6 @@ const JoinHousehold = () => {
             <CardDescription>You need to create an account to join this household</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {renderInvitationAlert()}
-            
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
@@ -291,7 +222,6 @@ const JoinHousehold = () => {
               <Button 
                 onClick={() => navigate('/register')}
                 className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
-                disabled={invitationStatus !== 'valid' && token !== null}
               >
                 Sign Up to Join
               </Button>
@@ -299,7 +229,6 @@ const JoinHousehold = () => {
                 variant="outline"
                 onClick={() => navigate('/login')}
                 className="w-full"
-                disabled={invitationStatus !== 'valid' && token !== null}
               >
                 Already have an account? Sign In
               </Button>
@@ -310,18 +239,58 @@ const JoinHousehold = () => {
     );
   }
 
-  const canJoin = !token || invitationStatus === 'valid';
+  if (alreadyMember) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="text-center py-8">
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Already a Member!</h2>
+            <p className="text-gray-600 mb-6">You're already a member of {household.name}.</p>
+            <Button onClick={() => navigate(`/household/${household.id}`)}>
+              Go to Household
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (requestSent) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="text-center py-8">
+            <CheckCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Request Sent!</h2>
+            <p className="text-gray-600 mb-6">
+              Your request to join {household.name} has been sent to the renter. 
+              You'll be notified once they approve your request.
+            </p>
+            <Button onClick={() => navigate('/dashboard')}>
+              Go to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
-          <CardTitle className="text-2xl">Join {household.name}</CardTitle>
-          <CardDescription>Complete your profile to join this household</CardDescription>
+          <CardTitle className="text-2xl">Request to Join {household.name}</CardTitle>
+          <CardDescription>Complete your profile to request joining this household</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {renderInvitationAlert()}
+          <Alert className="border-blue-200 bg-blue-50">
+            <CheckCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-700">
+              Your request will be sent to the renter for approval. You'll be notified once approved.
+            </AlertDescription>
+          </Alert>
           
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
@@ -355,16 +324,15 @@ const JoinHousehold = () => {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               className="h-11"
-              disabled={!canJoin}
             />
           </div>
 
           <Button 
-            onClick={joinHousehold}
-            disabled={joining || !displayName || !canJoin}
+            onClick={requestToJoin}
+            disabled={requesting || !displayName}
             className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
           >
-            {joining ? "Joining..." : "Join Household"}
+            {requesting ? "Sending Request..." : "Request to Join Household"}
           </Button>
         </CardContent>
       </Card>

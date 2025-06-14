@@ -63,7 +63,7 @@ const InviteLink = ({ householdId, householdName }: InviteLinkProps) => {
         </Button>
       </div>
       <p className="text-sm text-gray-600">
-        Share this link with roommates to invite them to join the household. No signup required initially!
+        Share this link with roommates. When they click it, they'll request to join and you'll get a notification to approve them.
       </p>
     </div>
   );
