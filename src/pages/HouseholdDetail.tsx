@@ -15,6 +15,7 @@ interface Household {
   name: string;
   rent_amount: number;
   due_day: number;
+  created_by: string;
 }
 
 interface Member {
@@ -55,6 +56,7 @@ const HouseholdDetail = () => {
   const [bills, setBills] = useState<Bill[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [inviteEmail, setInviteEmail] = useState('');
 
   useEffect(() => {
     if (id) {
