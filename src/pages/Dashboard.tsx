@@ -14,6 +14,7 @@ interface Household {
   rent_amount: number;
   due_day: number;
   created_at: string;
+  member_count?: number;
 }
 
 const Dashboard = () => {
@@ -31,22 +32,44 @@ const Dashboard = () => {
 
   const fetchHouseholds = async () => {
     try {
+      // Fetch households where user is a member
       const { data, error } = await supabase
-        .from('households')
+        .from('household_members')
         .select(`
-          id,
-          name,
-          rent_amount,
-          due_day,
-          created_at
+          household_id,
+          households (
+            id,
+            name,
+            rent_amount,
+            due_day,
+            created_at
+          )
         `)
-        .order('created_at', { ascending: false });
+        .eq('user_id', user?.id);
 
       if (error) {
         throw error;
       }
 
-      setHouseholds(data || []);
+      // Extract household data and get member counts
+      const householdData = data?.map(item => item.households).filter(Boolean) || [];
+      
+      // Get member counts for each household
+      const householdsWithCounts = await Promise.all(
+        householdData.map(async (household: any) => {
+          const { count } = await supabase
+            .from('household_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('household_id', household.id);
+          
+          return {
+            ...household,
+            member_count: count || 0
+          };
+        })
+      );
+
+      setHouseholds(householdsWithCounts);
     } catch (error: any) {
       console.error('Error fetching households:', error);
       toast({
@@ -199,6 +222,10 @@ const Dashboard = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Due Day</span>
                       <span className="font-semibold">{household.due_day}th of each month</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Members</span>
+                      <span className="font-semibold">{household.member_count}</span>
                     </div>
                     <Button 
                       className="w-full mt-4"

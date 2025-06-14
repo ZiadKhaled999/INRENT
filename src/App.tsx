@@ -9,6 +9,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import CreateHousehold from "./pages/CreateHousehold";
+import HouseholdDetail from "./pages/HouseholdDetail";
+import JoinHousehold from "./pages/JoinHousehold";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -24,6 +26,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/join/:id" element={<JoinHousehold />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
@@ -32,6 +35,11 @@ const App = () => (
           <Route path="/create-household" element={
             <ProtectedRoute>
               <CreateHousehold />
+            </ProtectedRoute>
+          } />
+          <Route path="/household/:id" element={
+            <ProtectedRoute>
+              <HouseholdDetail />
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
