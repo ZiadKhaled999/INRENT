@@ -34,14 +34,16 @@ const JoinHousehold = () => {
   const [requestSent, setRequestSent] = useState(false);
   const [invalidId, setInvalidId] = useState(false);
 
-  // Helper function to validate UUID format
+  // Helper function to validate UUID format (more lenient)
   const isValidUUID = (uuid: string) => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
   };
 
   useEffect(() => {
-    // If no ID is provided or ID is invalid, show error immediately
+    console.log('URL params - id:', id);
+    
+    // If no ID is provided, show error immediately
     if (!id) {
       console.log('No household ID provided');
       setInvalidId(true);
@@ -49,8 +51,12 @@ const JoinHousehold = () => {
       return;
     }
     
-    if (!isValidUUID(id)) {
-      console.log('Invalid household ID format:', id);
+    // Clean the ID and validate
+    const cleanId = id.trim();
+    console.log('Clean ID:', cleanId, 'Valid UUID:', isValidUUID(cleanId));
+    
+    if (!isValidUUID(cleanId)) {
+      console.log('Invalid household ID format:', cleanId);
       setInvalidId(true);
       setLoading(false);
       return;
@@ -62,38 +68,45 @@ const JoinHousehold = () => {
   useEffect(() => {
     if (user) {
       setDisplayName(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
-      if (id && isValidUUID(id)) {
+      if (id && isValidUUID(id.trim())) {
         checkMembershipStatus();
       }
     }
   }, [user, id]);
 
   const fetchHousehold = async () => {
-    if (!id || !isValidUUID(id)) {
+    if (!id) {
+      setInvalidId(true);
+      setLoading(false);
+      return;
+    }
+
+    const cleanId = id.trim();
+    if (!isValidUUID(cleanId)) {
       setInvalidId(true);
       setLoading(false);
       return;
     }
 
     try {
-      console.log('Fetching household with ID:', id);
+      console.log('Fetching household with ID:', cleanId);
       
-      // Fetch household data - make sure we're querying the correct table
+      // First check if household exists with a simple query
       const { data: householdData, error: householdError } = await supabase
         .from('households')
         .select('id, name, rent_amount, due_day, created_by')
-        .eq('id', id)
+        .eq('id', cleanId)
         .maybeSingle();
 
       console.log('Household query result:', { householdData, householdError });
 
       if (householdError) {
         console.error('Error fetching household:', householdError);
-        throw householdError;
+        // Don't set as invalid immediately, let it fall through to null check
       }
 
       if (!householdData) {
-        console.log('No household found with ID:', id);
+        console.log('No household found with ID:', cleanId);
         setHousehold(null);
         setLoading(false);
         return;
@@ -103,12 +116,13 @@ const JoinHousehold = () => {
       const { count, error: countError } = await supabase
         .from('household_members')
         .select('*', { count: 'exact', head: true })
-        .eq('household_id', id);
+        .eq('household_id', cleanId);
 
       if (countError) {
         console.error('Error fetching member count:', countError);
       }
 
+      console.log('Successfully found household:', householdData.name);
       setHousehold({
         ...householdData,
         member_count: count || 0
@@ -128,14 +142,17 @@ const JoinHousehold = () => {
   };
 
   const checkMembershipStatus = async () => {
-    if (!user?.id || !id || !isValidUUID(id)) return;
+    if (!user?.id || !id) return;
+
+    const cleanId = id.trim();
+    if (!isValidUUID(cleanId)) return;
 
     try {
       // Check if user is already a member
       const { data: existingMember, error: memberError } = await supabase
         .from('household_members')
         .select('id')
-        .eq('household_id', id)
+        .eq('household_id', cleanId)
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -155,7 +172,7 @@ const JoinHousehold = () => {
         .select('id')
         .eq('type', 'join_request')
         .ilike('message', `%${user.email}%`)
-        .ilike('message', `%${id}%`)
+        .ilike('message', `%${cleanId}%`)
         .maybeSingle();
 
       if (requestError) {
@@ -218,7 +235,8 @@ const JoinHousehold = () => {
     );
   }
 
-  if (invalidId || (!household && !loading)) {
+  // Only show invalid ID error if we explicitly determined the ID format is wrong
+  if (invalidId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
@@ -228,10 +246,32 @@ const JoinHousehold = () => {
             <p className="text-gray-600 mb-6">
               {!id ? 
                 "No household ID was provided in the link." :
-                !isValidUUID(id) ? 
-                  "This link appears to be invalid or malformed." : 
-                  "This household doesn't exist or the link is invalid."
+                "This link appears to be invalid or malformed."
               }
+            </p>
+            <div className="space-y-3">
+              <Button onClick={() => navigate('/')} className="w-full">
+                Go to Rentable
+              </Button>
+              <p className="text-sm text-gray-500">
+                Need a valid invite link? Ask your renter to share the correct household invitation link.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!household && !loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="text-center py-8">
+            <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Household Not Found</h2>
+            <p className="text-gray-600 mb-6">
+              This household doesn't exist or may have been deleted. Please check the link and try again.
             </p>
             <div className="space-y-3">
               <Button onClick={() => navigate('/')} className="w-full">
@@ -270,7 +310,7 @@ const JoinHousehold = () => {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
-            <CardTitle className="text-2xl">Join {household.name}</CardTitle>
+            <CardTitle className="text-2xl">Join {household?.name}</CardTitle>
             <CardDescription>You need to create an account to join this household</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -280,21 +320,21 @@ const JoinHousehold = () => {
                   <DollarSign className="w-6 h-6 text-blue-600" />
                 </div>
                 <p className="text-sm text-gray-600">Rent</p>
-                <p className="font-semibold">${household.rent_amount.toLocaleString()}</p>
+                <p className="font-semibold">${household?.rent_amount.toLocaleString()}</p>
               </div>
               <div>
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Users className="w-6 h-6 text-green-600" />
                 </div>
                 <p className="text-sm text-gray-600">Members</p>
-                <p className="font-semibold">{household.member_count}</p>
+                <p className="font-semibold">{household?.member_count}</p>
               </div>
               <div>
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Home className="w-6 h-6 text-purple-600" />
                 </div>
                 <p className="text-sm text-gray-600">Due</p>
-                <p className="font-semibold">{household.due_day}th</p>
+                <p className="font-semibold">{household?.due_day}th</p>
               </div>
             </div>
             
@@ -326,8 +366,8 @@ const JoinHousehold = () => {
           <CardContent className="text-center py-8">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Already a Member!</h2>
-            <p className="text-gray-600 mb-6">You're already a member of {household.name}.</p>
-            <Button onClick={() => navigate(`/household/${household.id}`)}>
+            <p className="text-gray-600 mb-6">You're already a member of {household?.name}.</p>
+            <Button onClick={() => navigate(`/household/${household?.id}`)}>
               Go to Household
             </Button>
           </CardContent>
@@ -344,7 +384,7 @@ const JoinHousehold = () => {
             <CheckCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Request Sent!</h2>
             <p className="text-gray-600 mb-6">
-              Your request to join {household.name} has been sent to the renter. 
+              Your request to join {household?.name} has been sent to the renter. 
               You'll be notified once they approve your request.
             </p>
             <Button onClick={() => navigate('/dashboard')}>
@@ -361,7 +401,7 @@ const JoinHousehold = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
-          <CardTitle className="text-2xl">Request to Join {household.name}</CardTitle>
+          <CardTitle className="text-2xl">Request to Join {household?.name}</CardTitle>
           <CardDescription>Complete your profile to request joining this household</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -378,21 +418,21 @@ const JoinHousehold = () => {
                 <DollarSign className="w-6 h-6 text-blue-600" />
               </div>
               <p className="text-sm text-gray-600">Monthly Rent</p>
-              <p className="font-semibold">${household.rent_amount.toLocaleString()}</p>
+              <p className="font-semibold">${household?.rent_amount.toLocaleString()}</p>
             </div>
             <div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                 <Users className="w-6 h-6 text-green-600" />
               </div>
               <p className="text-sm text-gray-600">Current Members</p>
-              <p className="font-semibold">{household.member_count}</p>
+              <p className="font-semibold">{household?.member_count}</p>
             </div>
             <div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                 <Home className="w-6 h-6 text-purple-600" />
               </div>
               <p className="text-sm text-gray-600">Due Day</p>
-              <p className="font-semibold">{household.due_day}th</p>
+              <p className="font-semibold">{household?.due_day}th</p>
             </div>
           </div>
 
