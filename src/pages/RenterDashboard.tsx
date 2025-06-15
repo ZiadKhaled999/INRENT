@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, DollarSign, Calendar, Plus, Users, Trash } from "lucide-react";
+import { Home, DollarSign, Calendar, Plus, Users, Trash, User } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import UserProfile from "@/components/UserProfile";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -30,20 +31,40 @@ interface Household {
 const RenterDashboard = () => {
   const [households, setHouseholds] = useState<Household[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const { toast } = useToast();
   const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user?.id) {
       fetchRenterData();
+      fetchUserProfile();
     } else if (!authLoading && !user) {
       navigate('/login');
     }
     // eslint-disable-next-line
   }, [user, authLoading, navigate]);
+
+  const fetchUserProfile = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error: any) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const fetchRenterData = async () => {
     if (!user?.id) {
@@ -261,6 +282,14 @@ const RenterDashboard = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowProfile(!showProfile)}
+                className="flex items-center gap-2"
+              >
+                <User className="w-4 h-4" />
+                Profile
+              </Button>
               <Button onClick={() => navigate('/create-household')}>
                 <Plus className="w-4 h-4 mr-2" />
                 Create Household
@@ -274,6 +303,13 @@ const RenterDashboard = () => {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Profile Section */}
+        {showProfile && (
+          <div className="mb-8">
+            <UserProfile userProfile={userProfile} />
+          </div>
+        )}
+
         {/* Quick Stats */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card>

@@ -1,14 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Home, DollarSign, Calendar, Users, Bell } from "lucide-react";
+import { Home, DollarSign, Calendar, Users, Bell, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import JoinHouseholdForm from "@/components/JoinHouseholdForm";
 import NotificationCenter from "@/components/NotificationCenter";
+import UserProfile from "@/components/UserProfile";
 
 interface HouseholdMember {
   id: string;
@@ -44,13 +44,33 @@ const ResidentDashboard = () => {
   const navigate = useNavigate();
   const [memberData, setMemberData] = useState<HouseholdMember[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchResidentData();
+      fetchUserProfile();
     }
   }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error: any) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const fetchResidentData = async () => {
     if (!user?.id) return;
@@ -179,8 +199,25 @@ const ResidentDashboard = () => {
             <h1 className="text-3xl font-bold text-gray-900">Resident Dashboard</h1>
             <p className="text-gray-600">Manage your rent payments and household memberships</p>
           </div>
-          <NotificationCenter />
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowProfile(!showProfile)}
+              className="flex items-center gap-2"
+            >
+              <User className="w-4 h-4" />
+              Profile
+            </Button>
+            <NotificationCenter />
+          </div>
         </div>
+
+        {/* Profile Section */}
+        {showProfile && (
+          <div className="flex justify-center">
+            <UserProfile userProfile={userProfile} />
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
