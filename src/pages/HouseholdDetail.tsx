@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Users, DollarSign, Calendar, Plus, Check, Clock, Share } from "lucide-react";
 import InviteLink from "@/components/InviteLink";
+import InviteResidentModal from "@/components/InviteResidentModal";
 
 interface Household {
   id: string;
@@ -417,8 +418,7 @@ const HouseholdDetail = () => {
               <p className="mb-4 text-gray-700">
                 To invite a roommate, use the "Invite Resident" button. Each invite is secure and can only be used once.
               </p>
-              {/* You might already have the InviteResidentModal somewhere else, if not, you can add it here */}
-              {/* <InviteResidentModal householdId={household.id} householdName={household.name} /> */}
+              <InviteResidentModal householdId={household.id} householdName={household.name} />
             </CardContent>
           </Card>
         )}
