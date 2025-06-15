@@ -14,7 +14,7 @@ interface Household {
   rent_amount: number;
   due_day: number;
   created_at: string;
-  member_count: number;
+  resident_count: number; // Changed from member_count to resident_count
 }
 
 const RenterDashboard = () => {
@@ -43,7 +43,7 @@ const RenterDashboard = () => {
     try {
       console.log('Fetching renter data for user:', user.id);
       
-      // Fetch households created by this renter
+      // Fetch households created by this renter and count only residents (exclude renter)
       const { data: householdsData, error: householdsError } = await supabase
         .from('households')
         .select(`
@@ -52,7 +52,10 @@ const RenterDashboard = () => {
           rent_amount,
           due_day,
           created_at,
-          household_members (count)
+          household_members!inner (
+            user_id,
+            role
+          )
         `)
         .eq('created_by', user.id)
         .order('created_at', { ascending: false });
@@ -64,11 +67,18 @@ const RenterDashboard = () => {
 
       console.log('Households data:', householdsData);
       
-      // Transform data to include member count
-      const transformedHouseholds = householdsData?.map(household => ({
-        ...household,
-        member_count: household.household_members?.[0]?.count || 0
-      })) || [];
+      // Transform data to include only resident count (exclude renter)
+      const transformedHouseholds = householdsData?.map(household => {
+        // Count only residents, exclude the renter (created_by user)
+        const residentCount = household.household_members?.filter(member => 
+          member.user_id !== user.id && member.role === 'resident'
+        ).length || 0;
+        
+        return {
+          ...household,
+          resident_count: residentCount
+        };
+      }) || [];
 
       setHouseholds(transformedHouseholds);
 
@@ -169,7 +179,7 @@ const RenterDashboard = () => {
                 <div>
                   <p className="text-sm text-gray-600">Total Residents</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {households.reduce((sum, h) => sum + h.member_count, 0)}
+                    {households.reduce((sum, h) => sum + h.resident_count, 0)}
                   </p>
                 </div>
               </div>
@@ -226,7 +236,7 @@ const RenterDashboard = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Residents:</span>
-                          <span className="font-medium">{household.member_count}</span>
+                          <span className="font-medium">{household.resident_count}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Created:</span>
