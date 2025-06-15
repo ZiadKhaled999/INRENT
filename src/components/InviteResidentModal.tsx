@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Copy, UserPlus, Mail, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import InviteLink from "./InviteLink";
 
 interface InviteResidentModalProps {
   householdId: string;
@@ -17,8 +18,8 @@ interface InviteResidentModalProps {
 const InviteResidentModal = ({ householdId, householdName }: InviteResidentModalProps) => {
   const [email, setEmail] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [inviteLink, setInviteLink] = useState('');
   const [inviteToken, setInviteToken] = useState('');
+  const [inviteLinkReady, setInviteLinkReady] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
@@ -59,11 +60,8 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
 
       if (error) throw error;
 
-      // Generate the invite link with the secure token
-      const baseUrl = window.location.origin;
-      const link = `${baseUrl}/join?token=${token}`;
-      setInviteLink(link);
       setInviteToken(token);
+      setInviteLinkReady(true);
 
       toast({
         title: "Invitation generated!",
@@ -81,44 +79,10 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
     }
   };
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      toast({
-        title: "Copied!",
-        description: "Invitation link copied to clipboard.",
-      });
-    } catch (error) {
-      console.error('Failed to copy:', error);
-      toast({
-        title: "Failed to copy",
-        description: "Please copy the link manually.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const shareLink = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Join ${householdName} on Rentable`,
-          text: `You've been invited to join ${householdName} for rent splitting!`,
-          url: inviteLink,
-        });
-      } catch (error) {
-        console.error('Error sharing:', error);
-        copyToClipboard();
-      }
-    } else {
-      copyToClipboard();
-    }
-  };
-
   const resetForm = () => {
     setEmail('');
-    setInviteLink('');
     setInviteToken('');
+    setInviteLinkReady(false);
   };
 
   return (
@@ -151,7 +115,7 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
             />
           </div>
 
-          {!inviteLink ? (
+          {!inviteLinkReady ? (
             <Button 
               onClick={generateInviteLink}
               disabled={isGenerating}
@@ -171,26 +135,13 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
                     <span>🔒 Secure Token: {inviteToken?.substring(0, 8)}...</span>
                     <span>📅 Expires in 7 days</span>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded-lg border">
-                    <p className="text-sm text-gray-700 break-all">{inviteLink}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={copyToClipboard}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy Link
-                    </Button>
-                    <Button 
-                      onClick={shareLink}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Share
-                    </Button>
+                  {/* Show the actual InviteLink component with the real inviteToken */}
+                  <InviteLink
+                    householdId={householdId}
+                    householdName={householdName}
+                    inviteToken={inviteToken}
+                  />
+                  <div className="flex gap-2 mt-2">
                     <Button 
                       onClick={resetForm}
                       variant="outline"

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -8,13 +8,14 @@ import { Copy, Share, Shield, Calendar } from "lucide-react";
 interface InviteLinkProps {
   householdId: string;
   householdName: string;
+  inviteToken: string; // Now required
 }
 
-const InviteLink = ({ householdId, householdName }: InviteLinkProps) => {
+const InviteLink = ({ householdId, householdName, inviteToken }: InviteLinkProps) => {
   const { toast } = useToast();
-  
-  // Generate a placeholder secure link - in real usage this would come from the database
-  const inviteUrl = `${window.location.origin}/join?token=SECURE_TOKEN_HERE`;
+
+  // Use a real, generated invitation token, not a placeholder
+  const inviteUrl = `${window.location.origin}/join?token=${inviteToken}`;
 
   const copyToClipboard = async () => {
     try {
@@ -64,7 +65,7 @@ const InviteLink = ({ householdId, householdName }: InviteLinkProps) => {
           <Share className="w-4 h-4" />
         </Button>
       </div>
-      
+
       <div className="flex items-center gap-4 text-sm text-gray-600">
         <div className="flex items-center gap-1">
           <Shield className="w-4 h-4 text-green-600" />
@@ -75,7 +76,7 @@ const InviteLink = ({ householdId, householdName }: InviteLinkProps) => {
           <span>7-Day Expiry</span>
         </div>
       </div>
-      
+
       <p className="text-sm text-gray-600">
         Share this secure link with roommates. Each link is unique, expires automatically, and can only be used once for security.
       </p>
