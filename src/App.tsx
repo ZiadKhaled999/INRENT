@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,6 +26,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          {/* Add route for invitation links with ?token=... */}
+          <Route path="/join" element={<JoinHousehold />} />
           <Route path="/join/:id" element={<JoinHousehold />} />
           <Route path="/role-selection" element={
             <ProtectedRoute>
