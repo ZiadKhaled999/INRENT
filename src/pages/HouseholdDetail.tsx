@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Users, DollarSign, Calendar, Plus, Check, Clock, Share } from "lucide-react";
+import { Users, DollarSign, Calendar, Plus, Check, Clock, Share, Crown } from "lucide-react";
 import InviteLink from "@/components/InviteLink";
 import InviteResidentModal from "@/components/InviteResidentModal";
 
@@ -24,6 +25,7 @@ interface Member {
   display_name: string;
   email: string;
   user_id: string;
+  role: string;
 }
 
 interface BillSplit {
@@ -58,6 +60,10 @@ const HouseholdDetail = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
+
+  // Filter members to separate renters from residents
+  const residents = members.filter(member => member.role !== 'renter' && member.user_id !== household?.created_by);
+  const renter = members.find(member => member.user_id === household?.created_by);
 
   useEffect(() => {
     if (id) {
@@ -214,9 +220,10 @@ const HouseholdDetail = () => {
 
       if (billError) throw billError;
 
-      // Create equal splits for all members
-      const splitAmount = household.rent_amount / members.length;
-      const splits = members.map(member => ({
+      // Create equal splits ONLY for residents (excluding the renter/creator)
+      const residentsOnly = members.filter(member => member.user_id !== household.created_by);
+      const splitAmount = household.rent_amount / residentsOnly.length;
+      const splits = residentsOnly.map(member => ({
         bill_id: bill.id,
         user_id: member.user_id,
         amount: splitAmount,
@@ -231,7 +238,7 @@ const HouseholdDetail = () => {
 
       toast({
         title: "Bill created!",
-        description: `${monthYear} bill created with equal splits.`,
+        description: `${monthYear} bill created with equal splits among ${residentsOnly.length} residents.`,
       });
 
       fetchHouseholdData();
@@ -364,8 +371,8 @@ const HouseholdDetail = () => {
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Members</p>
-                  <p className="text-2xl font-bold text-gray-900">{members.length}</p>
+                  <p className="text-sm text-gray-600">Residents</p>
+                  <p className="text-2xl font-bold text-gray-900">{residents.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -378,9 +385,9 @@ const HouseholdDetail = () => {
                   <DollarSign className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Per Person</p>
+                  <p className="text-sm text-gray-600">Per Resident</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${members.length > 0 ? (household.rent_amount / members.length).toFixed(0) : '0'}
+                    ${residents.length > 0 ? (household.rent_amount / residents.length).toFixed(0) : '0'}
                   </p>
                 </div>
               </div>
@@ -423,30 +430,71 @@ const HouseholdDetail = () => {
           </Card>
         )}
 
-        {/* Members Section */}
+        {/* Household Members Section */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Members ({members.length})</CardTitle>
-            <CardDescription>Current household members</CardDescription>
+            <CardTitle>Household Members</CardTitle>
+            <CardDescription>Renter and residents in this household</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {members.map((member) => (
-                <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{member.display_name}</p>
-                    <p className="text-sm text-gray-600">{member.email}</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {member.user_id === user?.id && (
-                      <span className="text-sm text-blue-600 font-medium">You</span>
-                    )}
-                    {member.user_id === household.created_by && (
-                      <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">Renter</span>
-                    )}
+            <div className="space-y-4">
+              {/* Renter Section */}
+              {renter && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                    <Crown className="w-4 h-4 mr-1 text-yellow-600" />
+                    Renter (Property Owner)
+                  </h3>
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{renter.display_name}</p>
+                        <p className="text-sm text-gray-600">{renter.email}</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {renter.user_id === user?.id && (
+                          <span className="text-sm text-blue-600 font-medium">You</span>
+                        )}
+                        <span className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
+                          Renter
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* Residents Section */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <Users className="w-4 h-4 mr-1 text-blue-600" />
+                  Residents ({residents.length}) - Rent Split Among These Members
+                </h3>
+                {residents.length > 0 ? (
+                  <div className="space-y-2">
+                    {residents.map((resident) => (
+                      <div key={resident.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-medium">{resident.display_name}</p>
+                          <p className="text-sm text-gray-600">{resident.email}</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {resident.user_id === user?.id && (
+                            <span className="text-sm text-blue-600 font-medium">You</span>
+                          )}
+                          <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                            Resident
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 bg-gray-50 rounded-lg text-center text-gray-500">
+                    No residents yet. Invite some roommates to get started!
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -457,7 +505,7 @@ const HouseholdDetail = () => {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Bills & Payments</CardTitle>
-                <CardDescription>Track monthly rent splits</CardDescription>
+                <CardDescription>Track monthly rent splits among residents only</CardDescription>
               </div>
               {/* Only renters/creators can create bills */}
               {(isRenter || isCreator) && (
@@ -475,7 +523,7 @@ const HouseholdDetail = () => {
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No bills yet</h3>
                 <p className="text-gray-600 mb-6">
                   {isRenter || isCreator 
-                    ? "Create your first monthly bill to start splitting rent" 
+                    ? "Create your first monthly bill to start splitting rent among residents" 
                     : "Wait for the renter to create this month's bill"
                   }
                 </p>
@@ -488,6 +536,7 @@ const HouseholdDetail = () => {
                       <div>
                         <h3 className="text-lg font-semibold">{bill.month_year}</h3>
                         <p className="text-gray-600">Due: {new Date(bill.due_date).toLocaleDateString()}</p>
+                        <p className="text-sm text-gray-500">Split among {bill.splits?.length || 0} residents</p>
                       </div>
                       <div className="text-right">
                         <p className="text-2xl font-bold">${bill.total_amount.toLocaleString()}</p>
@@ -498,7 +547,7 @@ const HouseholdDetail = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Member</TableHead>
+                          <TableHead>Resident</TableHead>
                           <TableHead>Amount</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Action</TableHead>
