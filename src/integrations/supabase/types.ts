@@ -108,32 +108,44 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by: string
+          current_uses: number | null
           email: string
           expires_at: string
           household_id: string
           id: string
+          is_active: boolean | null
+          max_uses: number | null
           token: string
           used_at: string | null
+          used_by: string | null
         }
         Insert: {
           created_at?: string | null
           created_by: string
+          current_uses?: number | null
           email: string
           expires_at: string
           household_id: string
           id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
           token: string
           used_at?: string | null
+          used_by?: string | null
         }
         Update: {
           created_at?: string | null
           created_by?: string
+          current_uses?: number | null
           email?: string
           expires_at?: string
           household_id?: string
           id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
           token?: string
           used_at?: string | null
+          used_by?: string | null
         }
         Relationships: [
           {
@@ -148,6 +160,13 @@ export type Database = {
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_invitations_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -293,6 +312,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_invitation_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_created_households: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -312,6 +335,18 @@ export type Database = {
       is_household_member: {
         Args: { target_household_id: string }
         Returns: boolean
+      }
+      use_invitation_token: {
+        Args: {
+          invitation_token: string
+          user_id: string
+          display_name: string
+        }
+        Returns: Json
+      }
+      validate_invitation_token: {
+        Args: { invitation_token: string }
+        Returns: Json
       }
     }
     Enums: {

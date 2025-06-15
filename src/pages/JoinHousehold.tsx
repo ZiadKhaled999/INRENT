@@ -1,395 +1,207 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, Users, DollarSign, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Home, Users, DollarSign, Calendar, Shield, CheckCircle } from "lucide-react";
 
-interface Household {
-  id: string;
-  name: string;
-  rent_amount: number;
-  due_day: number;
-  member_count: number;
-  created_by: string;
+interface InvitationDetails {
+  valid: boolean;
+  invitation_id?: string;
+  household_id?: string;
+  household_name?: string;
+  rent_amount?: number;
+  due_day?: number;
+  invited_email?: string;
+  created_by_name?: string;
+  created_by_email?: string;
+  expires_at?: string;
+  error?: string;
 }
 
 const JoinHousehold = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { user } = useAuth();
-  
-  const [household, setHousehold] = useState<Household | null>(null);
-  const [displayName, setDisplayName] = useState('');
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
-  const [requesting, setRequesting] = useState(false);
-  const [alreadyMember, setAlreadyMember] = useState(false);
-  const [requestSent, setRequestSent] = useState(false);
-  const [invalidId, setInvalidId] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [invitationDetails, setInvitationDetails] = useState<InvitationDetails | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // Helper function to validate UUID format (more lenient)
-  const isValidUUID = (uuid: string) => {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
-  };
+  const token = searchParams.get('token');
 
   useEffect(() => {
-    console.log('URL params - id:', id);
-    
-    // If no ID is provided, show error immediately
-    if (!id) {
-      console.log('No household ID provided');
-      setInvalidId(true);
+    if (!token) {
       setLoading(false);
-      return;
-    }
-    
-    // Clean the ID and validate
-    const cleanId = id.trim();
-    console.log('Clean ID:', cleanId, 'Valid UUID:', isValidUUID(cleanId));
-    
-    if (!isValidUUID(cleanId)) {
-      console.log('Invalid household ID format:', cleanId);
-      setInvalidId(true);
-      setLoading(false);
-      return;
-    }
-    
-    fetchHousehold();
-  }, [id]);
-
-  useEffect(() => {
-    if (user) {
-      setDisplayName(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
-      if (id && isValidUUID(id.trim())) {
-        checkMembershipStatus();
-      }
-    }
-  }, [user, id]);
-
-  const fetchHousehold = async () => {
-    if (!id) {
-      setInvalidId(true);
-      setLoading(false);
+      setInvitationDetails({ 
+        valid: false, 
+        error: 'No invitation token provided' 
+      });
       return;
     }
 
-    const cleanId = id.trim();
-    if (!isValidUUID(cleanId)) {
-      setInvalidId(true);
-      setLoading(false);
-      return;
-    }
+    validateInvitation();
+  }, [token]);
+
+  const validateInvitation = async () => {
+    if (!token) return;
 
     try {
-      console.log('Fetching household with ID:', cleanId);
+      console.log('Validating invitation token:', token);
       
-      // First check if household exists with a simple query
-      const { data: householdData, error: householdError } = await supabase
-        .from('households')
-        .select('id, name, rent_amount, due_day, created_by')
-        .eq('id', cleanId)
-        .maybeSingle();
+      // Use the secure validation function
+      const { data, error } = await supabase
+        .rpc('validate_invitation_token', { invitation_token: token });
 
-      console.log('Household query result:', { householdData, householdError });
-
-      if (householdError) {
-        console.error('Error fetching household:', householdError);
-        // Don't set as invalid immediately, let it fall through to null check
+      if (error) {
+        console.error('Error validating invitation:', error);
+        throw error;
       }
 
-      if (!householdData) {
-        console.log('No household found with ID:', cleanId);
-        setHousehold(null);
-        setLoading(false);
-        return;
+      console.log('Invitation validation result:', data);
+      setInvitationDetails(data);
+
+      // Pre-fill display name with user's name if available
+      if (user && data?.valid) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile?.full_name) {
+          setDisplayName(profile.full_name);
+        }
       }
-
-      // Get member count
-      const { count, error: countError } = await supabase
-        .from('household_members')
-        .select('*', { count: 'exact', head: true })
-        .eq('household_id', cleanId);
-
-      if (countError) {
-        console.error('Error fetching member count:', countError);
-      }
-
-      console.log('Successfully found household:', householdData.name);
-      setHousehold({
-        ...householdData,
-        member_count: count || 0
-      });
 
     } catch (error: any) {
-      console.error('Error fetching household:', error);
-      setHousehold(null);
-      toast({
-        title: "Failed to load household",
-        description: "This household may not exist or the link is invalid.",
-        variant: "destructive",
+      console.error('Error validating invitation:', error);
+      setInvitationDetails({
+        valid: false,
+        error: error.message || 'Failed to validate invitation'
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const checkMembershipStatus = async () => {
-    if (!user?.id || !id) return;
-
-    const cleanId = id.trim();
-    if (!isValidUUID(cleanId)) return;
-
-    try {
-      // Check if user is already a member
-      const { data: existingMember, error: memberError } = await supabase
-        .from('household_members')
-        .select('id')
-        .eq('household_id', cleanId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (memberError) {
-        console.error('Error checking membership:', memberError);
-        return;
-      }
-
-      if (existingMember) {
-        setAlreadyMember(true);
-        return;
-      }
-
-      // Check if user has already sent a request
-      const { data: existingRequest, error: requestError } = await supabase
-        .from('notifications')
-        .select('id')
-        .eq('type', 'join_request')
-        .ilike('message', `%${user.email}%`)
-        .ilike('message', `%${cleanId}%`)
-        .maybeSingle();
-
-      if (requestError) {
-        console.error('Error checking existing requests:', requestError);
-        return;
-      }
-
-      if (existingRequest) {
-        setRequestSent(true);
-      }
-    } catch (error) {
-      console.error('Error checking membership status:', error);
+  const handleJoinHousehold = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to join a household.",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
     }
-  };
 
-  const requestToJoin = async () => {
-    if (!household || !user || !displayName) return;
+    if (!displayName.trim()) {
+      toast({
+        title: "Display name required",
+        description: "Please enter your display name.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setRequesting(true);
+    if (!token || !invitationDetails?.valid) {
+      toast({
+        title: "Invalid invitation",
+        description: "This invitation is not valid.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setJoining(true);
+
     try {
-      // Create a notification for the household creator
-      const { error: notificationError } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: household.created_by,
-          type: 'join_request',
-          title: `New Join Request for ${household.name}`,
-          message: `${displayName} (${user.email}) wants to join your household. Household ID: ${household.id}, User ID: ${user.id}, Display Name: ${displayName}`,
-          read: false
+      console.log('Using invitation token:', token);
+      
+      // Use the secure join function
+      const { data, error } = await supabase
+        .rpc('use_invitation_token', {
+          invitation_token: token,
+          user_id: user.id,
+          display_name: displayName.trim()
         });
 
-      if (notificationError) throw notificationError;
+      if (error) {
+        console.error('Error joining household:', error);
+        throw error;
+      }
 
-      setRequestSent(true);
+      console.log('Join result:', data);
+
+      if (!data.success) {
+        toast({
+          title: "Failed to join household",
+          description: data.error || 'Unknown error occurred',
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
-        title: "Request sent!",
-        description: `Your request to join ${household.name} has been sent to the renter for approval.`,
+        title: "Welcome to the household!",
+        description: "You have successfully joined the household.",
       });
 
+      // Navigate to the household dashboard
+      navigate(`/household/${data.household_id}`);
+
     } catch (error: any) {
-      console.error('Error sending join request:', error);
+      console.error('Error joining household:', error);
       toast({
-        title: "Failed to send request",
-        description: error.message,
+        title: "Failed to join household",
+        description: error.message || 'An unexpected error occurred',
         variant: "destructive",
       });
     } finally {
-      setRequesting(false);
+      setJoining(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading household...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Only show invalid ID error if we explicitly determined the ID format is wrong
-  if (invalidId) {
-    return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
-          <CardContent className="text-center py-8">
-            <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Invalid Household Link</h2>
-            <p className="text-gray-600 mb-6">
-              {!id ? 
-                "No household ID was provided in the link." :
-                "This link appears to be invalid or malformed."
-              }
-            </p>
-            <div className="space-y-3">
-              <Button onClick={() => navigate('/')} className="w-full">
-                Go to Rentable
-              </Button>
-              <p className="text-sm text-gray-500">
-                Need a valid invite link? Ask your renter to share the correct household invitation link.
-              </p>
-            </div>
+          <CardContent className="p-6 text-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
+            <p className="text-gray-600">Validating invitation...</p>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  if (!household && !loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="text-center py-8">
-            <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Household Not Found</h2>
-            <p className="text-gray-600 mb-6">
-              This household doesn't exist or may have been deleted. Please check the link and try again.
-            </p>
-            <div className="space-y-3">
-              <Button onClick={() => navigate('/')} className="w-full">
-                Go to Rentable
-              </Button>
-              <p className="text-sm text-gray-500">
-                Need a valid invite link? Ask your renter to share the correct household invitation link.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!household) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="text-center py-8">
-            <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Household Not Found</h2>
-            <p className="text-gray-600 mb-6">This household doesn't exist or the link is invalid.</p>
-            <Button onClick={() => navigate('/')}>
-              Go to Rentable
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!user) {
+  if (!invitationDetails?.valid) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
-            <CardTitle className="text-2xl">Join {household?.name}</CardTitle>
-            <CardDescription>You need to create an account to join this household</CardDescription>
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-6 h-6 text-red-600" />
+            </div>
+            <CardTitle className="text-red-600">Invalid Invitation</CardTitle>
+            <CardDescription>
+              {invitationDetails?.error || 'This invitation link is not valid or has expired.'}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <DollarSign className="w-6 h-6 text-blue-600" />
-                </div>
-                <p className="text-sm text-gray-600">Rent</p>
-                <p className="font-semibold">${household?.rent_amount.toLocaleString()}</p>
-              </div>
-              <div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <Users className="w-6 h-6 text-green-600" />
-                </div>
-                <p className="text-sm text-gray-600">Members</p>
-                <p className="font-semibold">{household?.member_count}</p>
-              </div>
-              <div>
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <Home className="w-6 h-6 text-purple-600" />
-                </div>
-                <p className="text-sm text-gray-600">Due</p>
-                <p className="font-semibold">{household?.due_day}th</p>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <Button 
-                onClick={() => navigate('/register')}
-                className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
-              >
-                Sign Up to Join
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => navigate('/login')}
-                className="w-full"
-              >
-                Already have an account? Sign In
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (alreadyMember) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="text-center py-8">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Already a Member!</h2>
-            <p className="text-gray-600 mb-6">You're already a member of {household?.name}.</p>
-            <Button onClick={() => navigate(`/household/${household?.id}`)}>
-              Go to Household
+          <CardContent className="text-center">
+            <Button onClick={() => navigate('/')} variant="outline" className="w-full">
+              Go to Rentable
             </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (requestSent) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="text-center py-8">
-            <CheckCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Request Sent!</h2>
-            <p className="text-gray-600 mb-6">
-              Your request to join {household?.name} has been sent to the renter. 
-              You'll be notified once they approve your request.
+            <p className="text-sm text-gray-500 mt-4">
+              Need a valid invite link? Ask your renter to share the correct household invitation link.
             </p>
-            <Button onClick={() => navigate('/dashboard')}>
-              Go to Dashboard
-            </Button>
           </CardContent>
         </Card>
       </div>
@@ -398,62 +210,71 @@ const JoinHousehold = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
-          <CardTitle className="text-2xl">Request to Join {household?.name}</CardTitle>
-          <CardDescription>Complete your profile to request joining this household</CardDescription>
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Home className="w-6 h-6 text-green-600" />
+          </div>
+          <CardTitle className="text-2xl">Join Household</CardTitle>
+          <CardDescription>
+            You've been invited to join <strong>{invitationDetails.household_name}</strong>
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <Alert className="border-blue-200 bg-blue-50">
-            <CheckCircle className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-700">
-              Your request will be sent to the renter for approval. You'll be notified once approved.
-            </AlertDescription>
-          </Alert>
-          
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <DollarSign className="w-6 h-6 text-blue-600" />
+          {/* Household Details */}
+          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+            <h3 className="font-semibold text-gray-900">Household Details</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-gray-500" />
+                <span>Rent: ${Number(invitationDetails.rent_amount).toLocaleString()}</span>
               </div>
-              <p className="text-sm text-gray-600">Monthly Rent</p>
-              <p className="font-semibold">${household?.rent_amount.toLocaleString()}</p>
-            </div>
-            <div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Users className="w-6 h-6 text-green-600" />
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                <span>Due: {invitationDetails.due_day}th</span>
               </div>
-              <p className="text-sm text-gray-600">Current Members</p>
-              <p className="font-semibold">{household?.member_count}</p>
-            </div>
-            <div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Home className="w-6 h-6 text-purple-600" />
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-gray-500" />
+                <span>Invited by: {invitationDetails.created_by_name}</span>
               </div>
-              <p className="text-sm text-gray-600">Due Day</p>
-              <p className="font-semibold">{household?.due_day}th</p>
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-gray-500" />
+                <span>Expires: {new Date(invitationDetails.expires_at!).toLocaleDateString()}</span>
+              </div>
             </div>
           </div>
 
+          {/* Display Name Input */}
           <div className="space-y-2">
             <Label htmlFor="displayName">Your Display Name</Label>
             <Input
               id="displayName"
-              placeholder="How should others see your name?"
+              placeholder="Enter your name as it will appear to other residents"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               className="h-11"
             />
           </div>
 
+          {/* Join Button */}
           <Button 
-            onClick={requestToJoin}
-            disabled={requesting || !displayName}
-            className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+            onClick={handleJoinHousehold}
+            disabled={joining || !displayName.trim()}
+            className="w-full h-11 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
           >
-            {requesting ? "Sending Request..." : "Request to Join Household"}
+            {joining ? (
+              "Joining..."
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Join {invitationDetails.household_name}
+              </>
+            )}
           </Button>
+
+          <p className="text-xs text-gray-500 text-center">
+            By joining, you agree to split rent and expenses as agreed upon by the household members.
+          </p>
         </CardContent>
       </Card>
     </div>

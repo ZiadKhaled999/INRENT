@@ -14,24 +14,27 @@ const JoinHouseholdForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Helper function to extract household ID from the invite link
-  const extractHouseholdId = (link: string) => {
+  // Helper function to extract token from the invite link
+  const extractToken = (link: string) => {
     try {
       // Remove any trailing slashes and whitespace
       const cleanLink = link.trim().replace(/\/$/, '');
       
-      // Check if it's a valid URL format
-      if (cleanLink.includes('/join/')) {
-        const parts = cleanLink.split('/join/');
-        if (parts.length === 2) {
-          const householdId = parts[1];
-          // Validate UUID format
-          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-          if (uuidRegex.test(householdId)) {
-            return householdId;
-          }
+      // Check if it's a valid URL format with token parameter
+      if (cleanLink.includes('/join?token=') || cleanLink.includes('/join&token=')) {
+        const url = new URL(cleanLink);
+        const token = url.searchParams.get('token');
+        
+        if (token && token.length >= 16) { // Ensure token has minimum length
+          return token;
         }
       }
+      
+      // Also handle direct token input
+      if (cleanLink.length >= 16 && /^[A-Za-z0-9]+$/.test(cleanLink)) {
+        return cleanLink;
+      }
+      
       return null;
     } catch (error) {
       return null;
@@ -42,7 +45,7 @@ const JoinHouseholdForm = () => {
     if (!inviteLink.trim()) {
       toast({
         title: "Link required",
-        description: "Please paste the invitation link.",
+        description: "Please paste the invitation link or token.",
         variant: "destructive",
       });
       return;
@@ -51,10 +54,10 @@ const JoinHouseholdForm = () => {
     setProcessing(true);
 
     try {
-      // Extract household ID from the link
-      const householdId = extractHouseholdId(inviteLink);
+      // Extract token from the link
+      const token = extractToken(inviteLink);
       
-      if (!householdId) {
+      if (!token) {
         toast({
           title: "Invalid link",
           description: "The invitation link appears to be invalid or malformed.",
@@ -64,8 +67,8 @@ const JoinHouseholdForm = () => {
         return;
       }
 
-      // Navigate to the join household page with the extracted ID
-      navigate(`/join/${householdId}`);
+      // Navigate to the join page with the extracted token
+      navigate(`/join?token=${token}`);
       
     } catch (error) {
       console.error('Error processing invite link:', error);
@@ -96,13 +99,13 @@ const JoinHouseholdForm = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="inviteLink">Invitation Link</Label>
+          <Label htmlFor="inviteLink">Invitation Link or Token</Label>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 id="inviteLink"
-                placeholder="Paste the invitation link here..."
+                placeholder="Paste the invitation link or token here..."
                 value={inviteLink}
                 onChange={(e) => setInviteLink(e.target.value)}
                 className="pl-10"
@@ -117,9 +120,14 @@ const JoinHouseholdForm = () => {
             </Button>
           </div>
         </div>
-        <p className="text-sm text-gray-600">
-          The invitation link should look like: <code className="bg-gray-100 px-1 rounded text-xs">https://yoursite.com/join/household-id</code>
-        </p>
+        <div className="space-y-2">
+          <p className="text-sm text-gray-600">
+            The invitation link should look like: <code className="bg-gray-100 px-1 rounded text-xs">https://yoursite.com/join?token=ABC123...</code>
+          </p>
+          <p className="text-xs text-gray-500">
+            🔒 All invitation links are secure and expire after 7 days
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

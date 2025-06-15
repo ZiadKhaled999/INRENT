@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, UserPlus, Mail } from "lucide-react";
+import { Copy, UserPlus, Mail, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface InviteResidentModalProps {
@@ -18,6 +18,7 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
   const [email, setEmail] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
+  const [inviteToken, setInviteToken] = useState('');
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
@@ -33,12 +34,17 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
 
     setIsGenerating(true);
     try {
-      // Generate a unique token
-      const token = crypto.randomUUID();
+      // Generate a secure token using the database function
+      const { data: tokenResult, error: tokenError } = await supabase
+        .rpc('generate_invitation_token');
+
+      if (tokenError) throw tokenError;
+
+      const token = tokenResult;
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
 
-      // Save invitation to database
+      // Save invitation to database with the secure token
       const { error } = await supabase
         .from('household_invitations')
         .insert({
@@ -46,19 +52,22 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
           created_by: (await supabase.auth.getUser()).data.user?.id,
           email: email.trim(),
           token: token,
-          expires_at: expiresAt.toISOString()
+          expires_at: expiresAt.toISOString(),
+          max_uses: 1,
+          is_active: true
         });
 
       if (error) throw error;
 
-      // Generate the invite link
+      // Generate the invite link with the secure token
       const baseUrl = window.location.origin;
-      const link = `${baseUrl}/join/${householdId}?token=${token}`;
+      const link = `${baseUrl}/join?token=${token}`;
       setInviteLink(link);
+      setInviteToken(token);
 
       toast({
         title: "Invitation generated!",
-        description: "Share this link with the resident to join your household.",
+        description: "Share this secure link with the resident to join your household.",
       });
     } catch (error: any) {
       console.error('Error generating invite:', error);
@@ -89,9 +98,27 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
     }
   };
 
+  const shareLink = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Join ${householdName} on Rentable`,
+          text: `You've been invited to join ${householdName} for rent splitting!`,
+          url: inviteLink,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        copyToClipboard();
+      }
+    } else {
+      copyToClipboard();
+    }
+  };
+
   const resetForm = () => {
     setEmail('');
     setInviteLink('');
+    setInviteToken('');
   };
 
   return (
@@ -130,7 +157,7 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
               disabled={isGenerating}
               className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
             >
-              {isGenerating ? "Generating..." : "Generate Invitation Link"}
+              {isGenerating ? "Generating..." : "Generate Secure Invitation Link"}
             </Button>
           ) : (
             <Card>
@@ -139,6 +166,10 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Mail className="w-4 h-4" />
                     <span>Invitation for: {email}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <span>🔒 Secure Token: {inviteToken?.substring(0, 8)}...</span>
+                    <span>📅 Expires in 7 days</span>
                   </div>
                   <div className="p-3 bg-gray-50 rounded-lg border">
                     <p className="text-sm text-gray-700 break-all">{inviteLink}</p>
@@ -151,6 +182,14 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
                     >
                       <Copy className="w-4 h-4 mr-2" />
                       Copy Link
+                    </Button>
+                    <Button 
+                      onClick={shareLink}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Share
                     </Button>
                     <Button 
                       onClick={resetForm}
