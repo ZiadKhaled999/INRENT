@@ -1,9 +1,10 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, DollarSign, Calendar, Bell, Shield, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const LOGO_SRC = "/lovable-uploads/ff5803ec-2385-43a8-aebc-d33664bd076d.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -47,7 +48,12 @@ const Index = () => {
       <header className="container mx-auto px-4 py-6">
         <nav className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg"></div>
+            <img
+              src={LOGO_SRC}
+              alt="Rentable logo"
+              className="w-8 h-8 rounded-lg object-contain bg-transparent"
+              loading="lazy"
+            />
             <span className="text-2xl font-bold text-gray-900">Rentable</span>
           </div>
           <div className="flex items-center space-x-4">
@@ -177,7 +183,12 @@ const Index = () => {
       <footer className="bg-gray-50 py-8">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-green-600 rounded"></div>
+            <img
+              src={LOGO_SRC}
+              alt="Rentable logo"
+              className="w-6 h-6 rounded object-contain bg-transparent"
+              loading="lazy"
+            />
             <span className="text-xl font-bold text-gray-900">Rentable</span>
           </div>
           <p className="text-gray-600">

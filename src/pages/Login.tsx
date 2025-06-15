@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+const LOGO_SRC = "/lovable-uploads/ff5803ec-2385-43a8-aebc-d33664bd076d.png";
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -58,7 +59,12 @@ const Login = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg"></div>
+            <img
+              src={LOGO_SRC}
+              alt="Rentable logo"
+              className="w-8 h-8 rounded-lg object-contain bg-transparent"
+              loading="lazy"
+            />
             <span className="text-2xl font-bold text-gray-900">Rentable</span>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
