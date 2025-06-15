@@ -1,4 +1,3 @@
-
 -- Create a more robust household_invitations table if it doesn't exist or update it
 DROP TABLE IF EXISTS public.household_invitations CASCADE;
 
@@ -171,11 +170,11 @@ BEGIN
     );
   END IF;
 
-  -- Check if user is already a member
+  -- Check if user is already a member (disambiguate user_id)
   SELECT id INTO existing_member_id
   FROM public.household_members
   WHERE household_id = invitation_record.household_id
-    AND user_id = user_id;
+    AND household_members.user_id = user_id;
 
   IF existing_member_id IS NOT NULL THEN
     RETURN json_build_object(
