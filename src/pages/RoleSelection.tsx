@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Home, Users } from "lucide-react";
+import AppLogoWithBg from '@/components/AppLogoWithBg';
 
 const RoleSelection = () => {
   const [loading, setLoading] = useState(false);
@@ -47,9 +48,13 @@ const RoleSelection = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
+        {/* Logo Header */}
+        <div className="text-center mb-8 flex flex-col items-center">
+          <AppLogoWithBg size={80} className="mb-3" />
+          <span className="text-2xl font-bold text-gray-900 mt-1">Rentable</span>
+        </div>
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Role</h1>
           <p className="text-gray-600">Are you the main renter or a resident roommate?</p>
         </div>
@@ -131,3 +136,4 @@ const RoleSelection = () => {
 };
 
 export default RoleSelection;
+
