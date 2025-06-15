@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Home, DollarSign, Calendar, Plus, Users, Trash, User } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import UserProfile from "@/components/UserProfile";
+import AppLogoWithBg from "@/components/AppLogoWithBg";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -130,6 +131,44 @@ const RenterDashboard = () => {
     setDeleteTargetId(household.id);
   };
 
+  const sendDeletionNotifications = async (householdId: string, householdName: string) => {
+    try {
+      // Get all residents in the household
+      const { data: residents, error: residentsError } = await supabase
+        .from('household_members')
+        .select('user_id, display_name')
+        .eq('household_id', householdId)
+        .eq('role', 'resident');
+
+      if (residentsError) throw residentsError;
+
+      if (residents && residents.length > 0) {
+        // Create notifications for all residents
+        const notifications = residents.map(resident => ({
+          user_id: resident.user_id,
+          type: 'property_deleted',
+          title: 'Property Deleted',
+          message: `The property "${householdName}" has been deleted by the renter on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}.`,
+          read: false
+        }));
+
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .insert(notifications);
+
+        if (notificationError) {
+          console.error('Error creating notifications:', notificationError);
+          // Don't throw error here, just log it so deletion can continue
+        } else {
+          console.log('Deletion notifications sent to residents');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error sending deletion notifications:', error);
+      // Don't throw error here, just log it so deletion can continue
+    }
+  };
+
   const confirmDelete = async (householdId: string) => {
     setDeleting(true);
     try {
@@ -147,54 +186,53 @@ const RenterDashboard = () => {
         return;
       }
 
-      // If there are no residents, delete immediately
-      if (household.resident_count === 0) {
-        await deleteHousehold(householdId);
-        return;
-      }
+      // If there are residents, send notifications before deletion
+      if (household.resident_count > 0) {
+        await sendDeletionNotifications(householdId, household.name);
 
-      // If there are residents, check payment conditions
-      // 1. Check for any running/pending bills for the household
-      const { data: bills, error: billsError } = await supabase
-        .from('bills')
-        .select('id, status')
-        .eq('household_id', householdId);
+        // Check payment conditions
+        // 1. Check for any running/pending bills for the household
+        const { data: bills, error: billsError } = await supabase
+          .from('bills')
+          .select('id, status')
+          .eq('household_id', householdId);
 
-      if (billsError) throw billsError;
+        if (billsError) throw billsError;
 
-      const hasPending = bills && bills.some((bill) => (bill.status || '').toLowerCase() === 'pending');
+        const hasPending = bills && bills.some((bill) => (bill.status || '').toLowerCase() === 'pending');
 
-      if (hasPending) {
-        toast({
-          title: "Cannot delete property",
-          description: "There is an active or unpaid rent month. Please make sure all rent is paid before deleting this property.",
-          variant: "destructive",
-        });
-        setDeleting(false);
-        setDeleteTargetId(null);
-        return;
-      }
-
-      // 2. Check all splits are paid
-      if (bills && bills.length > 0) {
-        const billIds = bills.map(b => b.id);
-        const { data: allSplits, error: splitsError } = await supabase
-          .from('bill_splits')
-          .select('id,status')
-          .in('bill_id', billIds);
-
-        if (splitsError) throw splitsError;
-
-        const unpaidSplits = allSplits?.some(split => split.status !== 'paid');
-        if (unpaidSplits) {
+        if (hasPending) {
           toast({
             title: "Cannot delete property",
-            description: "Not all residents have paid their rent. Please wait until all splits are paid.",
+            description: "There is an active or unpaid rent month. Please make sure all rent is paid before deleting this property.",
             variant: "destructive",
           });
           setDeleting(false);
           setDeleteTargetId(null);
           return;
+        }
+
+        // 2. Check all splits are paid
+        if (bills && bills.length > 0) {
+          const billIds = bills.map(b => b.id);
+          const { data: allSplits, error: splitsError } = await supabase
+            .from('bill_splits')
+            .select('id,status')
+            .in('bill_id', billIds);
+
+          if (splitsError) throw splitsError;
+
+          const unpaidSplits = allSplits?.some(split => split.status !== 'paid');
+          if (unpaidSplits) {
+            toast({
+              title: "Cannot delete property",
+              description: "Not all residents have paid their rent. Please wait until all splits are paid.",
+              variant: "destructive",
+            });
+            setDeleting(false);
+            setDeleteTargetId(null);
+            return;
+          }
         }
       }
 
@@ -301,7 +339,7 @@ const RenterDashboard = () => {
       
       toast({
         title: "Property deleted",
-        description: "The household and all related data have been permanently deleted.",
+        description: "The household and all related data have been permanently deleted. Residents have been notified.",
         variant: "default",
       });
       
@@ -335,8 +373,8 @@ const RenterDashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your dashboard...</p>
+          <AppLogoWithBg size={60} />
+          <p className="text-gray-600 mt-4">Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -354,7 +392,7 @@ const RenterDashboard = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg"></div>
+              <AppLogoWithBg size={48} />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Renter Dashboard</h1>
                 <p className="text-gray-600">Manage your rental properties</p>
@@ -531,6 +569,7 @@ const RenterDashboard = () => {
                                       <>
                                         This property has <span className="font-bold">{household.resident_count} resident(s)</span>. 
                                         Deleting it will permanently remove all data including resident information, payment history, and bills.<br /><br />
+                                        <span className="text-orange-600 font-medium">All residents will be notified about this deletion.</span><br /><br />
                                         Are you sure you want to permanently delete <span className="font-bold">{household.name}</span>?
                                       </>
                                     )}
@@ -548,7 +587,7 @@ const RenterDashboard = () => {
                                     onClick={() => confirmDelete(household.id)}
                                     className="bg-red-600 hover:bg-red-700"
                                   >
-                                    {deleting ? 'Deleting...' : 'Yes, Delete'}
+                                    {deleting ? 'Deleting...' : 'Yes, Delete Property'}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
