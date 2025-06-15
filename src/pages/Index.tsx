@@ -123,6 +123,13 @@ const Index = () => {
                   Features
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
+                <button 
+                  onClick={() => navigate('/documentation')}
+                  className="text-slate-700 hover:text-emerald-600 transition-all duration-300 font-medium relative group"
+                >
+                  How It Works
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-300 group-hover:w-full"></span>
+                </button>
                 <a href="#mission" className="text-slate-700 hover:text-emerald-600 transition-all duration-300 font-medium relative group">
                   Mission
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-300 group-hover:w-full"></span>
@@ -159,6 +166,12 @@ const Index = () => {
               <div className="md:hidden absolute top-full left-4 right-4 bg-white/90 backdrop-blur-xl border border-emerald-200/50 shadow-2xl animate-[slideDown_0.3s_ease-out] rounded-2xl mt-2">
                 <div className="px-6 py-6 space-y-4">
                   <a href="#features" className="block text-slate-700 hover:text-emerald-600 font-medium py-2 transition-colors">Features</a>
+                  <button 
+                    onClick={() => navigate('/documentation')}
+                    className="block text-slate-700 hover:text-emerald-600 font-medium py-2 transition-colors text-left w-full"
+                  >
+                    How It Works
+                  </button>
                   <a href="#mission" className="block text-slate-700 hover:text-emerald-600 font-medium py-2 transition-colors">Mission</a>
                   <div className="flex flex-col space-y-3 pt-4 border-t border-emerald-200">
                     <Button 
@@ -217,6 +230,7 @@ const Index = () => {
                 <Button 
                   variant="outline" 
                   size="lg"
+                  onClick={() => navigate('/documentation')}
                   className="px-8 py-4 text-lg font-semibold border-2 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all duration-300 bg-white/70 backdrop-blur-sm"
                 >
                   See How It Works
