@@ -163,7 +163,7 @@ const RenterDashboard = () => {
       toast({
         title: "Property deleted",
         description: "The household and all related data have been deleted.",
-        variant: "success",
+        variant: "default",
       });
       setDeleteTargetId(null);
       fetchRenterData();
