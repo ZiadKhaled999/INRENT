@@ -492,22 +492,6 @@ const HouseholdDetail = () => {
           </div>
         </div>
       </div>
-
-      {/* Modals */}
-      <InviteResidentModal
-        householdId={household.id}
-        householdName={household.name}
-        isOpen={showInviteModal}
-        onClose={() => setShowInviteModal(false)}
-      />
-
-      <LeaveHouseholdModal
-        householdId={household.id}
-        householdName={household.name}
-        isOpen={showLeaveModal}
-        onClose={() => setShowLeaveModal(false)}
-        onLeave={() => navigate('/dashboard')}
-      />
     </div>
   );
 };
