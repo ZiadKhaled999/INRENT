@@ -1,12 +1,22 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, DollarSign, Calendar, Plus, Users } from "lucide-react";
+import { Home, DollarSign, Calendar, Plus, Users, Trash } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface Household {
   id: string;
@@ -14,7 +24,7 @@ interface Household {
   rent_amount: number;
   due_day: number;
   created_at: string;
-  resident_count: number; // Changed from member_count to resident_count
+  resident_count: number;
 }
 
 const RenterDashboard = () => {
@@ -23,15 +33,16 @@ const RenterDashboard = () => {
   const { toast } = useToast();
   const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    // Only fetch data when user is loaded and authenticated
     if (!authLoading && user?.id) {
       fetchRenterData();
     } else if (!authLoading && !user) {
-      // User is not authenticated, redirect to login
       navigate('/login');
     }
+    // eslint-disable-next-line
   }, [user, authLoading, navigate]);
 
   const fetchRenterData = async () => {
@@ -39,10 +50,8 @@ const RenterDashboard = () => {
       console.error('User ID is not available');
       return;
     }
-
+    setLoading(true);
     try {
-      console.log('Fetching renter data for user:', user.id);
-      
       // Fetch households created by this renter and count only residents (exclude renter)
       const { data: householdsData, error: householdsError } = await supabase
         .from('households')
@@ -95,6 +104,81 @@ const RenterDashboard = () => {
   };
 
   const totalRentCollected = households.reduce((sum, h) => sum + Number(h.rent_amount), 0);
+
+  const handleDelete = async (householdId: string) => {
+    setDeleting(true);
+    try {
+      // 1. Check for any running/pending bills for the household
+      const { data: bills, error: billsError } = await supabase
+        .from('bills')
+        .select('id, status')
+        .eq('household_id', householdId);
+
+      if (billsError) throw billsError;
+
+      const hasPending = bills && bills.some((bill) => (bill.status || '').toLowerCase() === 'pending');
+
+      if (hasPending) {
+        toast({
+          title: "Cannot delete property",
+          description: "There is an active or unpaid rent month. Please make sure all rent is paid before deleting this property.",
+          variant: "destructive",
+        });
+        setDeleting(false);
+        setDeleteTargetId(null);
+        return;
+      }
+
+      // 2. Check all splits are paid
+      if (bills && bills.length > 0) {
+        const billIds = bills.map(b => b.id);
+        const { data: allSplits, error: splitsError } = await supabase
+          .from('bill_splits')
+          .select('id,status')
+          .in('bill_id', billIds);
+
+        if (splitsError) throw splitsError;
+
+        const unpaidSplits = allSplits?.some(split => split.status !== 'paid');
+        if (unpaidSplits) {
+          toast({
+            title: "Cannot delete property",
+            description: "Not all residents have paid their rent. Please wait until all splits are paid.",
+            variant: "destructive",
+          });
+          setDeleting(false);
+          setDeleteTargetId(null);
+          return;
+        }
+      }
+
+      // 3. Delete the household (cascades will handle members, bills, etc.)
+      const { error: deleteError } = await supabase
+        .from('households')
+        .delete()
+        .eq('id', householdId);
+
+      if (deleteError) throw deleteError;
+
+      toast({
+        title: "Property deleted",
+        description: "The household and all related data have been deleted.",
+        variant: "success",
+      });
+      setDeleteTargetId(null);
+      fetchRenterData();
+
+    } catch (error: any) {
+      toast({
+        title: "Failed to delete property",
+        description: error.message,
+        variant: "destructive"
+      });
+      setDeleteTargetId(null);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   // Show loading while auth is loading
   if (authLoading || loading) {
@@ -215,44 +299,90 @@ const RenterDashboard = () => {
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {households.map((household) => (
-                  <Card key={household.id} className="cursor-pointer hover:shadow-lg transition-shadow"
-                        onClick={() => navigate(`/household/${household.id}`)}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-lg">{household.name}</h3>
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <Home className="w-5 h-5 text-blue-600" />
+                  <div key={household.id} className="relative group">
+                    <Card className="cursor-pointer hover:shadow-lg transition-shadow"
+                      onClick={() => navigate(`/household/${household.id}`)}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-semibold text-lg">{household.name}</h3>
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Home className="w-5 h-5 text-blue-600" />
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Monthly Rent:</span>
-                          <span className="font-medium">${household.rent_amount.toLocaleString()}</span>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Monthly Rent:</span>
+                            <span className="font-medium">${household.rent_amount.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Due Date:</span>
+                            <span className="font-medium">{household.due_day}th</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Residents:</span>
+                            <span className="font-medium">{household.resident_count}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Created:</span>
+                            <span className="font-medium">
+                              {new Date(household.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Due Date:</span>
-                          <span className="font-medium">{household.due_day}th</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Residents:</span>
-                          <span className="font-medium">{household.resident_count}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Created:</span>
-                          <span className="font-medium">
-                            {new Date(household.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
 
-                      <div className="mt-4 pt-4 border-t">
-                        <Button variant="outline" className="w-full" size="sm">
-                          Manage Property
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        <div className="mt-4 pt-4 border-t flex gap-2">
+                          <Button variant="outline" className="w-full" size="sm">
+                            Manage Property
+                          </Button>
+                          {/* Delete button only visible to owner */}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                disabled={deleting}
+                                className="ml-2"
+                                onClick={e => {
+                                  e.stopPropagation(); // Prevent card navigation
+                                  setDeleteTargetId(household.id);
+                                }}
+                                aria-label="Delete property"
+                              >
+                                <Trash className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            {deleteTargetId === household.id && (
+                              <AlertDialogContent onClick={e => e.stopPropagation()}>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Property</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete <span className="font-bold">{household.name}</span>?<br />
+                                    This cannot be undone. All data will be lost.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel
+                                    disabled={deleting}
+                                    onClick={() => setDeleteTargetId(null)}
+                                  >
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    disabled={deleting}
+                                    onClick={() => handleDelete(household.id)}
+                                  >
+                                    {deleting ? 'Deleting...' : 'Delete'}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            )}
+                          </AlertDialog>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ))}
               </div>
             )}
