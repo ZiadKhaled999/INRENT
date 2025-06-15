@@ -56,6 +56,57 @@ const ResidentDashboard = () => {
     }
   }, [user]);
 
+  // Add real-time subscription for household changes
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Subscribe to household deletions
+    const householdChannel = supabase
+      .channel('household-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'households'
+        },
+        (payload) => {
+          console.log('Household deleted:', payload);
+          // Remove the deleted household from memberData
+          setMemberData(prev => prev.filter(member => member.household_id !== payload.old.id));
+          
+          toast({
+            title: "Household removed",
+            description: "A household you were part of has been deleted.",
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'household_members',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Member removed:', payload);
+          // Remove the member from memberData
+          setMemberData(prev => prev.filter(member => member.id !== payload.old.id));
+          
+          toast({
+            title: "Removed from household",
+            description: "You have been removed from a household.",
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(householdChannel);
+    };
+  }, [user?.id, toast]);
+
   const fetchUserProfile = async () => {
     if (!user?.id) return;
     
@@ -100,7 +151,10 @@ const ResidentDashboard = () => {
       if (membersError) throw membersError;
 
       console.log('Member data:', members);
-      setMemberData(members || []);
+      
+      // Filter out any members where household is null (deleted households)
+      const validMembers = (members || []).filter(member => member.household !== null);
+      setMemberData(validMembers);
 
       // Fetch recent payments/bill splits
       const { data: billSplits, error: paymentsError } = await supabase
