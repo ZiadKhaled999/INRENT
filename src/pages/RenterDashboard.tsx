@@ -214,29 +214,94 @@ const RenterDashboard = () => {
 
   const deleteHousehold = async (householdId: string) => {
     try {
-      console.log('Deleting household:', householdId);
+      console.log('Starting deletion process for household:', householdId);
       
-      // Immediately remove from local state for instant UI update
-      setHouseholds(prev => prev.filter(h => h.id !== householdId));
+      // First, manually delete all related data in the correct order to ensure complete deletion
       
-      // Delete the household (cascades will handle members, bills, etc.)
+      // 1. Delete bill splits first
+      console.log('Deleting bill splits...');
+      const { data: bills } = await supabase
+        .from('bills')
+        .select('id')
+        .eq('household_id', householdId);
+      
+      if (bills && bills.length > 0) {
+        const billIds = bills.map(b => b.id);
+        const { error: splitsError } = await supabase
+          .from('bill_splits')
+          .delete()
+          .in('bill_id', billIds);
+        
+        if (splitsError) {
+          console.error('Error deleting bill splits:', splitsError);
+          throw splitsError;
+        }
+        console.log('Bill splits deleted successfully');
+      }
+      
+      // 2. Delete bills
+      console.log('Deleting bills...');
+      const { error: billsError } = await supabase
+        .from('bills')
+        .delete()
+        .eq('household_id', householdId);
+      
+      if (billsError) {
+        console.error('Error deleting bills:', billsError);
+        throw billsError;
+      }
+      console.log('Bills deleted successfully');
+      
+      // 3. Delete household invitations
+      console.log('Deleting household invitations...');
+      const { error: invitationsError } = await supabase
+        .from('household_invitations')
+        .delete()
+        .eq('household_id', householdId);
+      
+      if (invitationsError) {
+        console.error('Error deleting invitations:', invitationsError);
+        throw invitationsError;
+      }
+      console.log('Household invitations deleted successfully');
+      
+      // 4. Delete household members
+      console.log('Deleting household members...');
+      const { error: membersError } = await supabase
+        .from('household_members')
+        .delete()
+        .eq('household_id', householdId);
+      
+      if (membersError) {
+        console.error('Error deleting members:', membersError);
+        throw membersError;
+      }
+      console.log('Household members deleted successfully');
+      
+      // 5. Finally, delete the household itself
+      console.log('Deleting household...');
       const { error: deleteError } = await supabase
         .from('households')
         .delete()
         .eq('id', householdId);
 
       if (deleteError) {
-        console.error('Delete error:', deleteError);
-        // If delete failed, restore the household to the UI
-        await fetchRenterData();
+        console.error('Error deleting household:', deleteError);
         throw deleteError;
       }
 
-      console.log('Household deleted successfully');
+      console.log('Household deleted successfully from database');
+      
+      // Update the UI state to remove the deleted household
+      setHouseholds(prev => {
+        const updated = prev.filter(h => h.id !== householdId);
+        console.log('Updated households state, remaining:', updated.length);
+        return updated;
+      });
       
       toast({
         title: "Property deleted",
-        description: "The household and all related data have been deleted.",
+        description: "The household and all related data have been permanently deleted.",
         variant: "default",
       });
       
@@ -244,10 +309,24 @@ const RenterDashboard = () => {
       setDeleteTargetId(null);
       setDeleting(false);
       
+      // Force a refresh of the data to ensure consistency
+      console.log('Refreshing data after deletion...');
+      await fetchRenterData();
+      
     } catch (error: any) {
       console.error('Error in deleteHousehold:', error);
+      
+      // If there was an error, refresh the data to show the current state
+      await fetchRenterData();
+      
+      toast({
+        title: "Failed to delete property",
+        description: error.message,
+        variant: "destructive"
+      });
+      
       setDeleting(false);
-      throw error;
+      setDeleteTargetId(null);
     }
   };
 
