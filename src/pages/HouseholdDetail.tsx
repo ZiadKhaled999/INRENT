@@ -251,37 +251,44 @@ const HouseholdDetail = () => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+              <Button variant="ghost" onClick={() => navigate('/dashboard')} className="flex-shrink-0">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
-              <AppLogoWithBg size={40} />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{household.name}</h1>
-                <p className="text-gray-600">
+              <AppLogoWithBg size={40} className="flex-shrink-0" />
+              <div className="min-w-0">
+                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">{household.name}</h1>
+                <p className="text-sm lg:text-base text-gray-600">
                   Monthly Rent: ${household.rent_amount.toLocaleString()} • Due: {household.due_day}th
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            
+            <div className="flex flex-wrap items-center gap-2">
               {currentUserIsCreator && (
                 <>
-                  <Button onClick={() => setShowInviteModal(true)}>
+                  <InviteResidentModal
+                    householdId={household.id}
+                    householdName={household.name}
+                  />
+                  <Button 
+                    onClick={createBill} 
+                    disabled={creatingBill}
+                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
-                    Invite Resident
-                  </Button>
-                  <Button onClick={createBill} disabled={creatingBill}>
-                    {creatingBill ? 'Creating...' : 'Create This Month Bill'}
+                    {creatingBill ? 'Creating...' : 'Create Bill'}
                   </Button>
                 </>
               )}
               {!currentUserIsCreator && userRole === 'resident' && (
-                <Button variant="outline" onClick={() => setShowLeaveModal(true)}>
-                  <UserMinus className="w-4 h-4 mr-2" />
-                  Leave Household
-                </Button>
+                <LeaveHouseholdModal
+                  householdId={household.id}
+                  householdName={household.name}
+                  onLeave={() => navigate('/dashboard')}
+                />
               )}
             </div>
           </div>
@@ -290,7 +297,7 @@ const HouseholdDetail = () => {
           {household.scheduled_for_deletion && (
             <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2">
-                <Home className="w-5 h-5 text-red-600" />
+                <Home className="w-5 h-5 text-red-600 flex-shrink-0" />
                 <div>
                   <h3 className="font-semibold text-red-800">Household Scheduled for Deletion</h3>
                   <p className="text-sm text-red-700">
@@ -438,11 +445,11 @@ const HouseholdDetail = () => {
                 <div className="space-y-3">
                   {members.map((member) => (
                     <div key={member.id} className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{member.display_name}</p>
-                        <p className="text-sm text-gray-600">{member.email}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium truncate">{member.display_name}</p>
+                        <p className="text-sm text-gray-600 truncate">{member.email}</p>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${
                         member.role === 'resident' 
                           ? 'bg-blue-100 text-blue-800' 
                           : 'bg-purple-100 text-purple-800'
