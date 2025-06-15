@@ -35,6 +35,12 @@ interface RentPeriodManagerProps {
   isCreator: boolean;
 }
 
+interface EndRentPeriodResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
 const RentPeriodManager: React.FC<RentPeriodManagerProps> = ({ householdId, isCreator }) => {
   const [rentPeriods, setRentPeriods] = useState<RentPeriod[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +60,14 @@ const RentPeriodManager: React.FC<RentPeriodManagerProps> = ({ householdId, isCr
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRentPeriods(data || []);
+      
+      // Type assertion to ensure correct status types
+      const typedData = (data || []).map(period => ({
+        ...period,
+        status: period.status as 'active' | 'completed' | 'overdue'
+      }));
+      
+      setRentPeriods(typedData);
     } catch (error: any) {
       console.error('Error fetching rent periods:', error);
       toast({
@@ -77,14 +90,17 @@ const RentPeriodManager: React.FC<RentPeriodManagerProps> = ({ householdId, isCr
 
       if (error) throw error;
 
-      if (data?.success) {
+      // Type assertion for the response
+      const response = data as EndRentPeriodResponse;
+
+      if (response?.success) {
         toast({
           title: "Rent period ended",
-          description: data.message || "Rent period has been successfully ended and residents notified.",
+          description: response.message || "Rent period has been successfully ended and residents notified.",
         });
         await fetchRentPeriods();
       } else {
-        throw new Error(data?.error || 'Failed to end rent period');
+        throw new Error(response?.error || 'Failed to end rent period');
       }
     } catch (error: any) {
       console.error('Error ending rent period:', error);

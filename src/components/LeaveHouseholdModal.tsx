@@ -13,6 +13,8 @@ interface LeaveHouseholdModalProps {
   householdId: string;
   householdName: string;
   onLeave: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 interface LeaveCondition {
@@ -22,7 +24,13 @@ interface LeaveCondition {
   met: boolean;
 }
 
-const LeaveHouseholdModal = ({ householdId, householdName, onLeave }: LeaveHouseholdModalProps) => {
+const LeaveHouseholdModal: React.FC<LeaveHouseholdModalProps> = ({ 
+  householdId, 
+  householdName, 
+  onLeave, 
+  isOpen, 
+  onClose 
+}) => {
   const [open, setOpen] = useState(false);
   const [conditions, setConditions] = useState<LeaveCondition[]>([]);
   const [loading, setLoading] = useState(false);
@@ -30,11 +38,17 @@ const LeaveHouseholdModal = ({ householdId, householdName, onLeave }: LeaveHouse
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Use controlled open state if provided, otherwise use internal state
+  const modalOpen = isOpen !== undefined ? isOpen : open;
+  const setModalOpen = onClose !== undefined ? (value: boolean) => {
+    if (!value) onClose();
+  } : setOpen;
+
   useEffect(() => {
-    if (open && user) {
+    if (modalOpen && user) {
       checkLeaveConditions();
     }
-  }, [open, user, householdId]);
+  }, [modalOpen, user, householdId]);
 
   const checkLeaveConditions = async () => {
     setLoading(true);
@@ -127,7 +141,7 @@ const LeaveHouseholdModal = ({ householdId, householdName, onLeave }: LeaveHouse
         description: `You have successfully left ${householdName}.`,
       });
 
-      setOpen(false);
+      setModalOpen(false);
       onLeave();
     } catch (error: any) {
       console.error('Error leaving household:', error);
@@ -142,7 +156,7 @@ const LeaveHouseholdModal = ({ householdId, householdName, onLeave }: LeaveHouse
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={modalOpen} onOpenChange={setModalOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
           <LogOut className="w-4 h-4 mr-2" />
@@ -199,7 +213,7 @@ const LeaveHouseholdModal = ({ householdId, householdName, onLeave }: LeaveHouse
           <div className="flex gap-2 pt-4">
             <Button 
               variant="outline" 
-              onClick={() => setOpen(false)}
+              onClick={() => setModalOpen(false)}
               className="flex-1"
             >
               Cancel

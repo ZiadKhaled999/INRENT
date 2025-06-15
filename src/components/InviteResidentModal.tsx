@@ -13,15 +13,28 @@ import InviteLink from "./InviteLink";
 interface InviteResidentModalProps {
   householdId: string;
   householdName: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-const InviteResidentModal = ({ householdId, householdName }: InviteResidentModalProps) => {
+const InviteResidentModal: React.FC<InviteResidentModalProps> = ({ 
+  householdId, 
+  householdName, 
+  isOpen, 
+  onClose 
+}) => {
   const [email, setEmail] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [inviteToken, setInviteToken] = useState('');
   const [inviteLinkReady, setInviteLinkReady] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+
+  // Use controlled open state if provided, otherwise use internal state
+  const modalOpen = isOpen !== undefined ? isOpen : open;
+  const setModalOpen = onClose !== undefined ? (value: boolean) => {
+    if (!value) onClose();
+  } : setOpen;
 
   const generateInviteLink = async () => {
     if (!email.trim()) {
@@ -86,8 +99,8 @@ const InviteResidentModal = ({ householdId, householdName }: InviteResidentModal
   };
 
   return (
-    <Dialog open={open} onOpenChange={(newOpen) => {
-      setOpen(newOpen);
+    <Dialog open={modalOpen} onOpenChange={(newOpen) => {
+      setModalOpen(newOpen);
       if (!newOpen) {
         resetForm();
       }
