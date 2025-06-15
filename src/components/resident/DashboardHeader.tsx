@@ -5,7 +5,7 @@ import { User } from "lucide-react";
 import NotificationCenter from "@/components/NotificationCenter";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
 import UserProfile from '@/components/UserProfile';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
@@ -15,7 +15,7 @@ interface DashboardHeaderProps {
 }
 
 const DashboardHeader = ({ userProfile, onVerifyPhone }: DashboardHeaderProps) => {
-    const isMobile = useMobile();
+    const isMobile = useIsMobile();
 
     const profileTrigger = (
         <Button 

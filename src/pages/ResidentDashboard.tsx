@@ -49,6 +49,7 @@ const ResidentDashboard = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -277,6 +278,11 @@ const ResidentDashboard = () => {
     });
   };
 
+  const handleJoinSuccess = () => {
+    fetchResidentData();
+    setIsJoinDialogOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-2 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
@@ -297,7 +303,7 @@ const ResidentDashboard = () => {
             </div>
             <div className="space-y-4">
               <RecentPayments payments={payments} />
-              <Dialog>
+              <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="w-full">
                     Join Another Household
@@ -307,7 +313,7 @@ const ResidentDashboard = () => {
                   <DialogHeader>
                     <DialogTitle>Join a new household</DialogTitle>
                   </DialogHeader>
-                  <JoinHouseholdForm />
+                  <JoinHouseholdForm onJoin={handleJoinSuccess} />
                 </DialogContent>
               </Dialog>
             </div>
@@ -316,8 +322,8 @@ const ResidentDashboard = () => {
       </div>
 
       <PhoneVerification
-        isOpen={showPhoneVerification}
-        onClose={() => setShowPhoneVerification(false)}
+        open={showPhoneVerification}
+        onOpenChange={setShowPhoneVerification}
         onVerified={handleProfileUpdate}
       />
     </div>
