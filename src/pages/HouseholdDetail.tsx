@@ -172,11 +172,22 @@ const HouseholdDetail = () => {
 
       if (billError) throw billError;
 
-      // Create bill splits for each resident
-      const residents = members.filter(member => member.role === 'resident');
-      const amountPerResident = Number(household.rent_amount) / residents.length;
+      // Create bill splits for each resident, excluding the renter/creator
+      const residentsToBill = members.filter(member => member.role === 'resident' && member.user_id !== household.created_by);
 
-      const billSplits = residents.map(resident => ({
+      if (residentsToBill.length === 0) {
+        toast({
+          title: "Cannot Create Bill",
+          description: "There are no residents to split the bill with. Please invite residents first.",
+          variant: "destructive",
+        });
+        setCreatingBill(false);
+        return;
+      }
+
+      const amountPerResident = Number(household.rent_amount) / residentsToBill.length;
+
+      const billSplits = residentsToBill.map(resident => ({
         bill_id: billData.id,
         user_id: resident.user_id,
         amount: amountPerResident,
@@ -243,8 +254,8 @@ const HouseholdDetail = () => {
     );
   }
 
-  // Filter residents only (exclude the renter)
-  const residents = members.filter(member => member.role === 'resident');
+  // Filter residents only (exclude the renter/creator)
+  const residents = members.filter(member => member.role === 'resident' && member.user_id !== household.created_by);
 
   const userRole = getUserRole();
   const currentUserIsCreator = isCreator();
