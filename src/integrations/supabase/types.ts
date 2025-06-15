@@ -286,6 +286,33 @@ export type Database = {
           },
         ]
       }
+      phone_verification_attempts: {
+        Row: {
+          attempts_count: number | null
+          blocked_until: string | null
+          created_at: string | null
+          id: string
+          last_attempt_at: string | null
+          phone_number: string
+        }
+        Insert: {
+          attempts_count?: number | null
+          blocked_until?: string | null
+          created_at?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          phone_number: string
+        }
+        Update: {
+          attempts_count?: number | null
+          blocked_until?: string | null
+          created_at?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          phone_number?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -293,6 +320,10 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          phone_number: string | null
+          phone_verification_code: string | null
+          phone_verification_expires_at: string | null
+          phone_verified: boolean | null
           updated_at: string | null
           user_type: string | null
         }
@@ -302,6 +333,10 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          phone_number?: string | null
+          phone_verification_code?: string | null
+          phone_verification_expires_at?: string | null
+          phone_verified?: boolean | null
           updated_at?: string | null
           user_type?: string | null
         }
@@ -311,6 +346,10 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          phone_number?: string | null
+          phone_verification_code?: string | null
+          phone_verification_expires_at?: string | null
+          phone_verified?: boolean | null
           updated_at?: string | null
           user_type?: string | null
         }
@@ -365,6 +404,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_send_phone_verification: {
+        Args: { phone: string }
+        Returns: boolean
+      }
       check_overdue_payments: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -374,6 +417,10 @@ export type Database = {
         Returns: Json
       }
       generate_invitation_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_phone_verification_code: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
@@ -396,6 +443,10 @@ export type Database = {
       is_household_member: {
         Args: { target_household_id: string }
         Returns: boolean
+      }
+      record_phone_verification_attempt: {
+        Args: { phone: string }
+        Returns: undefined
       }
       use_invitation_token: {
         Args: {

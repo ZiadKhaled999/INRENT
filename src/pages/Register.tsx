@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,8 +8,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
-
-const LOGO_SRC = "/lovable-uploads/ff5803ec-2385-43a8-aebc-d33664bd076d.png";
+import PhoneVerification from "@/components/PhoneVerification";
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -16,6 +16,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<'register' | 'phone-verification'>('register');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -62,12 +63,14 @@ const Register = () => {
         return;
       }
 
-      toast({
-        title: "Welcome to Rentable!",
-        description: "Your account has been created successfully. Please check your email to confirm your account.",
-      });
-      
-      navigate('/dashboard');
+      if (data.user) {
+        toast({
+          title: "Account created successfully!",
+          description: "Please verify your phone number to enhance security.",
+        });
+        
+        setStep('phone-verification');
+      }
     } catch (error) {
       console.error('Registration error:', error);
       toast({
@@ -80,6 +83,56 @@ const Register = () => {
     }
   };
 
+  const handlePhoneVerificationComplete = () => {
+    toast({
+      title: "Welcome to Rentable!",
+      description: "Your account has been created and phone number verified.",
+    });
+    navigate('/dashboard');
+  };
+
+  const handleSkipVerification = () => {
+    navigate('/dashboard');
+  };
+
+  if (step === 'phone-verification') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-4">
+              <AppLogoWithBg size={60} />
+              <span className="text-2xl font-bold text-gray-900 mt-1">Rentable</span>
+            </Link>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Secure Your Account</h1>
+            <p className="text-sm sm:text-base text-gray-600">Verify your phone number for enhanced security</p>
+          </div>
+
+          <PhoneVerification 
+            onVerificationComplete={handlePhoneVerificationComplete}
+            isRequired={false}
+          />
+
+          <div className="text-center mt-6">
+            <Button 
+              variant="ghost" 
+              onClick={handleSkipVerification}
+              className="text-sm text-gray-600 hover:text-gray-800 touch-manipulation"
+            >
+              Skip for now
+            </Button>
+          </div>
+
+          <div className="text-center mt-6 text-xs sm:text-sm text-gray-500">
+            <p>Phone verification helps prevent unauthorized access</p>
+            <p>and ensures the security of your rental data.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -89,21 +142,21 @@ const Register = () => {
             <AppLogoWithBg size={60} />
             <span className="text-2xl font-bold text-gray-900 mt-1">Rentable</span>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Rentable</h1>
-          <p className="text-gray-600">Start splitting rent fairly with your roommates</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Join Rentable</h1>
+          <p className="text-sm sm:text-base text-gray-600">Start splitting rent fairly with your roommates</p>
         </div>
 
         <Card className="shadow-xl border-0">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Create Account</CardTitle>
-            <CardDescription className="text-center">
+            <CardTitle className="text-xl sm:text-2xl text-center">Create Account</CardTitle>
+            <CardDescription className="text-center text-sm sm:text-base">
               Set up your free account to get started
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name" className="text-sm sm:text-base">Full Name</Label>
                 <Input
                   id="name"
                   type="text"
@@ -111,12 +164,12 @@ const Register = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="h-11"
+                  className="h-11 text-sm sm:text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -124,12 +177,12 @@ const Register = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-11"
+                  className="h-11 text-sm sm:text-base"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -138,12 +191,12 @@ const Register = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="h-11"
+                  className="h-11 text-sm sm:text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-sm sm:text-base">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -151,13 +204,13 @@ const Register = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="h-11"
+                  className="h-11 text-sm sm:text-base"
                 />
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-sm sm:text-base touch-manipulation"
                 disabled={loading}
               >
                 {loading ? "Creating Account..." : "Create Account"}
@@ -165,7 +218,7 @@ const Register = () => {
             </form>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600">
                 Already have an account?{" "}
                 <Link to="/login" className="text-blue-600 hover:underline font-medium">
                   Sign in
@@ -175,7 +228,7 @@ const Register = () => {
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6 text-sm text-gray-500">
+        <div className="text-center mt-6 text-xs sm:text-sm text-gray-500">
           <p>By creating an account, you're joining our community-driven mission</p>
           <p>to make rent splitting fair and transparent for everyone.</p>
         </div>
