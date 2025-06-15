@@ -4,9 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, DollarSign, Calendar, Plus, Users, Trash, User } from "lucide-react";
+import { Home, DollarSign, Calendar, Plus, Users, Trash } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
-import UserProfile from "@/components/UserProfile";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
 import {
   AlertDialog,
@@ -19,6 +18,9 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import RenterDashboardHeader from '@/components/renter/DashboardHeader';
+import PhoneVerification from '@/components/PhoneVerification';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface Household {
   id: string;
@@ -34,11 +36,11 @@ const RenterDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
   const { toast } = useToast();
-  const { user, signOut, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user?.id) {
@@ -123,6 +125,15 @@ const RenterDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleProfileUpdate = () => {
+    fetchUserProfile();
+    setShowPhoneVerification(false);
+    toast({
+        title: "Profile updated!",
+        description: "Your phone number information has been refreshed.",
+    });
   };
 
   const totalRentCollected = households.reduce((sum, h) => sum + Number(h.rent_amount), 0);
@@ -384,46 +395,9 @@ const RenterDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <AppLogoWithBg size={48} />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Renter Dashboard</h1>
-                <p className="text-gray-600">Manage your rental properties</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowProfile(!showProfile)}
-                className="flex items-center gap-2"
-              >
-                <User className="w-4 h-4" />
-                Profile
-              </Button>
-              <Button onClick={() => navigate('/create-household')}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Household
-              </Button>
-              <Button variant="outline" onClick={signOut}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <RenterDashboardHeader userProfile={userProfile} onVerifyPhone={() => setShowPhoneVerification(true)} />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Profile Section */}
-        {showProfile && (
-          <div className="mb-8">
-            <UserProfile userProfile={userProfile} />
-          </div>
-        )}
-
         {/* Quick Stats */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card>
@@ -600,6 +574,13 @@ const RenterDashboard = () => {
           </CardContent>
         </Card>
       </div>
+      <Dialog open={showPhoneVerification} onOpenChange={setShowPhoneVerification}>
+        <DialogContent>
+            <PhoneVerification
+                onVerificationComplete={handleProfileUpdate}
+            />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
