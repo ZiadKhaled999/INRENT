@@ -24,6 +24,27 @@ interface InvitationDetails {
   error?: string;
 }
 
+// Type guard to check if an object is InvitationDetails
+function isInvitationDetails(obj: any): obj is InvitationDetails {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.valid === 'boolean' &&
+    (obj.valid
+      ? typeof obj.household_id === 'string'
+      : typeof obj.error === 'string')
+  );
+}
+
+// Type guard to check for Join response shape
+function isJoinResponse(obj: any): obj is { success: boolean; household_id?: string; error?: string } {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.success === 'boolean'
+  );
+}
+
 const JoinHousehold = () => {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -39,13 +60,12 @@ const JoinHousehold = () => {
   useEffect(() => {
     if (!token) {
       setLoading(false);
-      setInvitationDetails({ 
-        valid: false, 
-        error: 'No invitation token provided' 
+      setInvitationDetails({
+        valid: false,
+        error: 'No invitation token provided'
       });
       return;
     }
-
     validateInvitation();
   }, [token]);
 
@@ -53,31 +73,37 @@ const JoinHousehold = () => {
     if (!token) return;
 
     try {
+      setLoading(true);
       console.log('Validating invitation token:', token);
-      
+
       // Use the secure validation function
-      const { data, error } = await supabase
-        .rpc('validate_invitation_token', { invitation_token: token });
+      const { data, error } = await supabase.rpc('validate_invitation_token', { invitation_token: token });
 
       if (error) {
         console.error('Error validating invitation:', error);
         throw error;
       }
 
-      console.log('Invitation validation result:', data);
-      setInvitationDetails(data);
+      // Type guard for returned data shape
+      if (isInvitationDetails(data)) {
+        setInvitationDetails(data);
+        // Pre-fill display name with user's name if available and invitation is valid
+        if (user && data.valid) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single();
 
-      // Pre-fill display name with user's name if available
-      if (user && data?.valid) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('id', user.id)
-          .single();
-        
-        if (profile?.full_name) {
-          setDisplayName(profile.full_name);
+          if (profile?.full_name) {
+            setDisplayName(profile.full_name);
+          }
         }
+      } else {
+        setInvitationDetails({
+          valid: false,
+          error: 'Unexpected server response'
+        });
       }
 
     } catch (error: any) {
@@ -124,38 +150,43 @@ const JoinHousehold = () => {
 
     try {
       console.log('Using invitation token:', token);
-      
+
       // Use the secure join function
-      const { data, error } = await supabase
-        .rpc('use_invitation_token', {
-          invitation_token: token,
-          user_id: user.id,
-          display_name: displayName.trim()
-        });
+      const { data, error } = await supabase.rpc('use_invitation_token', {
+        invitation_token: token,
+        user_id: user.id,
+        display_name: displayName.trim()
+      });
 
       if (error) {
         console.error('Error joining household:', error);
         throw error;
       }
 
-      console.log('Join result:', data);
+      if (isJoinResponse(data)) {
+        if (!data.success) {
+          toast({
+            title: "Failed to join household",
+            description: data.error || 'Unknown error occurred',
+            variant: "destructive",
+          });
+          return;
+        }
 
-      if (!data.success) {
         toast({
-          title: "Failed to join household",
-          description: data.error || 'Unknown error occurred',
+          title: "Welcome to the household!",
+          description: "You have successfully joined the household.",
+        });
+
+        // Navigate to the household dashboard
+        navigate(`/household/${data.household_id}`);
+      } else {
+        toast({
+          title: "Unexpected response",
+          description: "The join response was not recognized. Please contact support.",
           variant: "destructive",
         });
-        return;
       }
-
-      toast({
-        title: "Welcome to the household!",
-        description: "You have successfully joined the household.",
-      });
-
-      // Navigate to the household dashboard
-      navigate(`/household/${data.household_id}`);
 
     } catch (error: any) {
       console.error('Error joining household:', error);
