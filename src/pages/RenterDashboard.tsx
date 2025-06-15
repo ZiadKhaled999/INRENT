@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -196,6 +195,9 @@ const RenterDashboard = () => {
     try {
       console.log('Deleting household:', householdId);
       
+      // Immediately remove from local state for instant UI update
+      setHouseholds(prev => prev.filter(h => h.id !== householdId));
+      
       // Delete the household (cascades will handle members, bills, etc.)
       const { error: deleteError } = await supabase
         .from('households')
@@ -204,6 +206,8 @@ const RenterDashboard = () => {
 
       if (deleteError) {
         console.error('Delete error:', deleteError);
+        // If delete failed, restore the household to the UI
+        await fetchRenterData();
         throw deleteError;
       }
 
@@ -218,9 +222,6 @@ const RenterDashboard = () => {
       // Reset delete state
       setDeleteTargetId(null);
       setDeleting(false);
-      
-      // Immediately refresh the data to update the UI
-      await fetchRenterData();
       
     } catch (error: any) {
       console.error('Error in deleteHousehold:', error);
