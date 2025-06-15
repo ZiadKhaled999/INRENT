@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Home, DollarSign, Calendar, Users, Bell, User } from "lucide-react";
+import { Home, DollarSign, Calendar, Users, Bell, User, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import JoinHouseholdForm from "@/components/JoinHouseholdForm";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -232,7 +233,7 @@ const ResidentDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <AppLogoWithBg size={60} />
           <p className="text-gray-600 mt-4">Loading your dashboard...</p>
@@ -246,25 +247,27 @@ const ResidentDashboard = () => {
   const pendingPayments = getPendingPayments();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <AppLogoWithBg size={48} />
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Resident Dashboard</h1>
-              <p className="text-gray-600">Manage your rent payments and household memberships</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-2 sm:p-4 lg:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        {/* Mobile-Optimized Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3 w-full sm:w-auto">
+            <AppLogoWithBg size={40} className="sm:hidden" />
+            <AppLogoWithBg size={48} className="hidden sm:block" />
+            <div className="flex-1 sm:flex-none">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">Resident Dashboard</h1>
+              <p className="text-sm sm:text-base text-gray-600 leading-tight">Manage your rent payments and household memberships</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-end">
             <Button 
               variant="outline" 
+              size="sm"
               onClick={() => setShowProfile(!showProfile)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4"
             >
-              <User className="w-4 h-4" />
-              Profile
+              <User className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Profile</span>
             </Button>
             <NotificationCenter />
           </div>
@@ -272,103 +275,108 @@ const ResidentDashboard = () => {
 
         {/* Profile Section */}
         {showProfile && (
-          <div className="flex justify-center">
-            <UserProfile userProfile={userProfile} />
+          <div className="flex justify-center px-2">
+            <div className="w-full max-w-md">
+              <UserProfile userProfile={userProfile} />
+            </div>
           </div>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardContent className="p-6">
+        {/* Mobile-First Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+          <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Monthly Rent</p>
-                  <p className="text-2xl font-bold text-gray-900">${totalRent.toLocaleString()}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1 font-medium">Total Monthly Rent</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">${totalRent.toLocaleString()}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-blue-600" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
+                  <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Next Due Date</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1 font-medium">Next Due Date</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
                     {nextDueDate ? nextDueDate.toLocaleDateString() : 'N/A'}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-green-600" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="border-0 shadow-sm hover:shadow-md transition-shadow sm:col-span-2 lg:col-span-1">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Pending Payments</p>
-                  <p className="text-2xl font-bold text-gray-900">{pendingPayments}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1 font-medium">Pending Payments</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{pendingPayments}</p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Bell className="w-6 h-6 text-purple-600" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
+                  <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Join Household Form */}
+        {/* Mobile-Responsive Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+          {/* Join Household Form - Full width on mobile when no households */}
           {memberData.length === 0 ? (
-            <div className="lg:col-span-2">
+            <div className="xl:col-span-2">
               <JoinHouseholdForm />
             </div>
           ) : (
-            <JoinHouseholdForm />
+            <div className="order-2 xl:order-1">
+              <JoinHouseholdForm />
+            </div>
           )}
 
-          {/* Households */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Home className="w-5 h-5" />
+          {/* Households Card - Responsive layout */}
+          <Card className="order-1 xl:order-2">
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Home className="w-4 h-4 sm:w-5 sm:h-5" />
                 My Households
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Households you're a member of
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               {memberData.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600 mb-2">No households yet</p>
-                  <p className="text-sm text-gray-500">Use the form above to join a household</p>
+                <div className="text-center py-6 sm:py-8">
+                  <Users className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-2 text-sm sm:text-base">No households yet</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Use the form above to join a household</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {memberData.map((member) => (
                     <div 
                       key={member.id}
-                      className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                      className="p-3 sm:p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors active:bg-gray-100 touch-manipulation"
                       onClick={() => navigate(`/household/${member.household_id}`)}
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{member.household.name}</h3>
-                          <p className="text-sm text-gray-600">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{member.household.name}</h3>
+                          <p className="text-xs sm:text-sm text-gray-600 mt-1">
                             Rent: ${member.household.rent_amount.toLocaleString()} • Due: {member.household.due_day}th
                           </p>
                         </div>
-                        <div className="text-right">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <div className="flex justify-between sm:justify-end items-center">
+                          <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             {member.role}
                           </span>
                         </div>
@@ -381,26 +389,26 @@ const ResidentDashboard = () => {
           </Card>
         </div>
 
-        {/* Recent Payments */}
+        {/* Recent Payments - Mobile Optimized */}
         {payments.length > 0 && (
           <Card>
-            <CardHeader>
-              <CardTitle>Recent Payments</CardTitle>
-              <CardDescription>Your latest rent payment activity</CardDescription>
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-lg sm:text-xl">Recent Payments</CardTitle>
+              <CardDescription className="text-sm">Your latest rent payment activity</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               <div className="space-y-3">
                 {payments.map((payment) => (
-                  <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{payment.bill.household.name}</p>
-                      <p className="text-sm text-gray-600">
+                  <div key={payment.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg gap-2 sm:gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{payment.bill.household.name}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mt-1">
                         {payment.bill.month_year} • Due: {new Date(payment.bill.due_date).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900">${Number(payment.amount).toLocaleString()}</p>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    <div className="flex justify-between sm:justify-end items-center gap-3">
+                      <p className="font-semibold text-gray-900 text-sm sm:text-base">${Number(payment.amount).toLocaleString()}</p>
+                      <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         payment.status === 'paid' 
                           ? 'bg-green-100 text-green-800' 
                           : payment.status === 'verified'

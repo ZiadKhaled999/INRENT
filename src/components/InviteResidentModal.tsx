@@ -106,25 +106,26 @@ const InviteResidentModal: React.FC<InviteResidentModalProps> = ({
       }
     }}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-          <UserPlus className="w-4 h-4 mr-2" />
-          Invite Resident
+        <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-sm sm:text-base px-3 sm:px-4 touch-manipulation">
+          <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+          <span className="hidden xs:inline">Invite Resident</span>
+          <span className="xs:hidden">Invite</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="mx-4 max-w-md sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Invite Resident to {householdName}</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Invite Resident to {householdName}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Resident's Email</Label>
+            <Label htmlFor="email" className="text-sm sm:text-base">Resident's Email</Label>
             <Input
               id="email"
               type="email"
               placeholder="resident@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-11"
+              className="h-10 sm:h-11 text-sm sm:text-base"
             />
           </div>
 
@@ -132,20 +133,20 @@ const InviteResidentModal: React.FC<InviteResidentModalProps> = ({
             <Button 
               onClick={generateInviteLink}
               disabled={isGenerating}
-              className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+              className="w-full h-10 sm:h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-sm sm:text-base touch-manipulation"
             >
               {isGenerating ? "Generating..." : "Generate Secure Invitation Link"}
             </Button>
           ) : (
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3 sm:p-4">
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Mail className="w-4 h-4" />
-                    <span>Invitation for: {email}</span>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                    <Mail className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="truncate">Invitation for: {email}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span>🔒 Secure Token: {inviteToken?.substring(0, 8)}...</span>
+                  <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2 text-xs text-gray-500">
+                    <span className="flex items-center">🔒 Secure Token: {inviteToken?.substring(0, 8)}...</span>
                     <span>📅 Expires in 7 days</span>
                   </div>
                   {/* Show the actual InviteLink component with the real inviteToken */}
@@ -158,7 +159,7 @@ const InviteResidentModal: React.FC<InviteResidentModalProps> = ({
                     <Button 
                       onClick={resetForm}
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 text-sm touch-manipulation"
                     >
                       New Invitation
                     </Button>

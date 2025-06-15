@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -148,14 +149,14 @@ const RentPeriodManager: React.FC<RentPeriodManagerProps> = ({ householdId, isCr
   if (loading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+        <CardHeader className="pb-3 sm:pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
             Rent Periods
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-gray-600">Loading rent periods...</p>
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <p className="text-gray-600 text-sm sm:text-base">Loading rent periods...</p>
         </CardContent>
       </Card>
     );
@@ -163,33 +164,33 @@ const RentPeriodManager: React.FC<RentPeriodManagerProps> = ({ householdId, isCr
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="w-5 h-5" />
+      <CardHeader className="pb-3 sm:pb-4">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+          <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
           Rent Periods
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-sm">
           Track and manage rent periods for this household
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 sm:p-6 pt-0">
         {rentPeriods.length === 0 ? (
-          <p className="text-gray-600 text-center py-4">No rent periods found</p>
+          <p className="text-gray-600 text-center py-4 text-sm sm:text-base">No rent periods found</p>
         ) : (
           <div className="space-y-3">
             {rentPeriods.map((period) => (
-              <div key={period.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3">
+              <div key={period.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3 sm:gap-4">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   {getStatusIcon(period.status)}
-                  <div>
-                    <h4 className="font-medium">{period.month_year}</h4>
-                    <p className="text-sm text-gray-600">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm sm:text-base truncate">{period.month_year}</h4>
+                    <p className="text-xs sm:text-sm text-gray-600">
                       Due: {new Date(period.due_date).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge className={getStatusColor(period.status)}>
+                <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
+                  <Badge className={`${getStatusColor(period.status)} text-xs px-2 py-1`}>
                     {period.status}
                   </Badge>
                   {isCreator && period.status !== 'completed' && (
@@ -199,21 +200,25 @@ const RentPeriodManager: React.FC<RentPeriodManagerProps> = ({ householdId, isCr
                           variant="outline" 
                           size="sm"
                           disabled={endingPeriod === period.month_year}
+                          className="text-xs sm:text-sm px-2 sm:px-3 touch-manipulation"
                         >
                           {endingPeriod === period.month_year ? 'Ending...' : 'End Period'}
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="mx-4 max-w-md">
                         <AlertDialogHeader>
-                          <AlertDialogTitle>End Rent Period</AlertDialogTitle>
-                          <AlertDialogDescription>
+                          <AlertDialogTitle className="text-lg">End Rent Period</AlertDialogTitle>
+                          <AlertDialogDescription className="text-sm">
                             Are you sure you want to end the rent period for {period.month_year}? 
                             All residents will be notified that this rent period has officially ended.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => endRentPeriod(period.month_year)}>
+                        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                          <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => endRentPeriod(period.month_year)}
+                            className="w-full sm:w-auto"
+                          >
                             End Period
                           </AlertDialogAction>
                         </AlertDialogFooter>
