@@ -28,7 +28,7 @@ const Index = () => {
     },
     {
       icon: Users,
-      title: "Easy Household Setup",
+      title: "Easy Household Setup", 
       description: "Create your household and invite roommates in under 30 seconds.",
       gradient: "from-green-500 to-emerald-500"
     },
@@ -85,17 +85,17 @@ const Index = () => {
             <path
               d="M0,400 C300,350 600,450 900,400 C1050,375 1150,425 1200,400 L1200,800 L0,800 Z"
               fill="url(#waveGradient1)"
-              className="animate-[wave1_8s_ease-in-out_infinite]"
+              className="animate-[wave1_6s_ease-in-out_infinite]"
             />
             <path
               d="M0,450 C400,400 800,500 1200,450 L1200,800 L0,800 Z"
               fill="url(#waveGradient2)"
-              className="animate-[wave2_12s_ease-in-out_infinite_reverse]"
+              className="animate-[wave2_8s_ease-in-out_infinite_reverse]"
             />
             <path
               d="M0,500 C200,480 400,520 600,500 C800,480 1000,520 1200,500 L1200,800 L0,800 Z"
               fill="url(#waveGradient1)"
-              className="animate-[wave3_10s_ease-in-out_infinite]"
+              className="animate-[wave3_7s_ease-in-out_infinite]"
             />
           </svg>
         </div>
@@ -109,7 +109,7 @@ const Index = () => {
           <nav className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4 group cursor-pointer">
-                <div className="relative transition-all duration-500 group-hover:scale-110 animate-[logoFloat_6s_ease-in-out_infinite]">
+                <div className="relative transition-all duration-500 group-hover:scale-110 animate-[logoFloat_4s_ease-in-out_infinite]">
                   <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full blur-lg opacity-30 animate-pulse"></div>
                   <AppLogoWithBg size={42} className="relative z-10 shadow-xl" />
                 </div>
@@ -247,50 +247,52 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Animated Water Wave Separator */}
+        {/* Smooth Video-like Wave Separator */}
         <div className="relative h-32 overflow-hidden">
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1200 128">
             <defs>
-              <linearGradient id="flowGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#10b981" stopOpacity="0.1" />
-                <stop offset="25%" stopColor="#ffffff" stopOpacity="0.8" />
-                <stop offset="75%" stopColor="#34d399" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#10b981" stopOpacity="0.1" />
+              <linearGradient id="smoothFlow1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
+                <stop offset="25%" stopColor="#ffffff" stopOpacity="0.6" />
+                <stop offset="50%" stopColor="#34d399" stopOpacity="0.8" />
+                <stop offset="75%" stopColor="#ffffff" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#10b981" stopOpacity="0.2" />
               </linearGradient>
-              <linearGradient id="flowGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.2" />
-                <stop offset="50%" stopColor="#10b981" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.2" />
+              <linearGradient id="smoothFlow2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.3" />
+                <stop offset="33%" stopColor="#10b981" stopOpacity="0.6" />
+                <stop offset="66%" stopColor="#34d399" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.3" />
               </linearGradient>
             </defs>
             <path
-              d="M 0,64 Q 200,20 400,64 T 800,64 Q 1000,20 1200,64"
-              stroke="url(#flowGradient1)"
+              d="M 0,64 Q 150,30 300,64 Q 450,98 600,64 Q 750,30 900,64 Q 1050,98 1200,64"
+              stroke="url(#smoothFlow1)"
               strokeWidth="3"
               fill="none"
-              className="animate-[flowWave1_6s_ease-in-out_infinite]"
+              className="animate-[smoothWave1_3s_linear_infinite]"
+              strokeDasharray="20,15"
+            />
+            <path
+              d="M 0,80 Q 200,50 400,80 Q 600,110 800,80 Q 1000,50 1200,80"
+              stroke="url(#smoothFlow2)"
+              strokeWidth="2"
+              fill="none"
+              className="animate-[smoothWave2_4s_linear_infinite]"
               strokeDasharray="15,10"
             />
             <path
-              d="M 0,80 Q 300,40 600,80 T 1200,80"
-              stroke="url(#flowGradient2)"
-              strokeWidth="2"
-              fill="none"
-              className="animate-[flowWave2_8s_ease-in-out_infinite]"
-              strokeDasharray="12,8"
-            />
-            <path
-              d="M 0,96 Q 150,60 300,96 T 600,96 Q 900,60 1200,96"
-              stroke="url(#flowGradient1)"
+              d="M 0,96 Q 100,70 200,96 Q 300,122 400,96 Q 500,70 600,96 Q 700,122 800,96 Q 900,70 1000,96 Q 1100,122 1200,96"
+              stroke="url(#smoothFlow1)"
               strokeWidth="1.5"
               fill="none"
-              className="animate-[flowWave3_10s_ease-in-out_infinite]"
-              strokeDasharray="8,6"
+              className="animate-[smoothWave3_5s_linear_infinite]"
+              strokeDasharray="12,8"
             />
           </svg>
         </div>
 
-        {/* Features Section */}
+        {/* Features Section with Connecting Lines */}
         <section id="features" className="relative py-24 px-6">
           <div className="container mx-auto">
             <div className="text-center mb-20">
@@ -306,18 +308,64 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
+              {/* Connecting Lines SVG */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20" style={{ zIndex: 1, top: '50%', transform: 'translateY(-50%)' }}>
+                <defs>
+                  <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.4" />
+                    <stop offset="50%" stopColor="#34d399" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.4" />
+                  </linearGradient>
+                </defs>
+                {/* Row 1 connections */}
+                <path
+                  d="M 33% 25% L 66% 25%"
+                  stroke="url(#connectionGradient)"
+                  strokeWidth="2"
+                  fill="none"
+                  className="animate-[connectionFlow_4s_ease-in-out_infinite] hidden lg:block"
+                  strokeDasharray="8,4"
+                />
+                {/* Row 2 connections */}
+                <path
+                  d="M 33% 75% L 66% 75%"
+                  stroke="url(#connectionGradient)"
+                  strokeWidth="2"
+                  fill="none"
+                  className="animate-[connectionFlow_4s_ease-in-out_infinite_1s] hidden lg:block"
+                  strokeDasharray="8,4"
+                />
+                {/* Vertical connections */}
+                <path
+                  d="M 16.5% 40% L 16.5% 60%"
+                  stroke="url(#connectionGradient)"
+                  strokeWidth="2"
+                  fill="none"
+                  className="animate-[connectionFlow_3s_ease-in-out_infinite_0.5s] hidden lg:block"
+                  strokeDasharray="6,3"
+                />
+                <path
+                  d="M 83.5% 40% L 83.5% 60%"
+                  stroke="url(#connectionGradient)"
+                  strokeWidth="2"
+                  fill="none"
+                  className="animate-[connectionFlow_3s_ease-in-out_infinite_1.5s] hidden lg:block"
+                  strokeDasharray="6,3"
+                />
+              </svg>
+
               {features.map((feature, index) => (
                 <Card 
                   key={index} 
-                  className="group relative border-0 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 bg-white/80 backdrop-blur-sm overflow-hidden hover:bg-white animate-[fadeInUp_0.6s_ease-out] hover:animate-[cardFloat_3s_ease-in-out_infinite]"
+                  className="group relative border-0 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 bg-white/80 backdrop-blur-sm overflow-hidden hover:bg-white animate-[fadeInUp_0.6s_ease-out] z-10"
                   style={{ 
                     animationDelay: `${index * 100}ms`
                   }}
                 >
                   <div className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
                   <CardHeader className="text-center relative z-10 pb-4">
-                    <div className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg animate-[iconFloat_4s_ease-in-out_infinite]`}>
-                      <feature.icon className="w-8 h-8 text-white" />
+                    <div className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg`}>
+                      <feature.icon className="w-8 h-8 text-white group-hover:animate-[iconPulse_0.6s_ease-out]" />
                     </div>
                     <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-emerald-700 transition-colors mb-3">
                       {feature.title}
@@ -383,7 +431,7 @@ const Index = () => {
             <svg className="absolute inset-0 w-full h-full opacity-5" viewBox="0 0 1200 800">
               <path
                 d="M 0,400 Q 400,200 800,400 T 1200,400"
-                stroke="url(#flowGradient1)"
+                stroke="url(#smoothFlow1)"
                 strokeWidth="2"
                 fill="none"
                 className="animate-[gentleFlow_15s_linear_infinite]"
@@ -469,9 +517,9 @@ const Index = () => {
 
           @keyframes logoFloat {
             0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-8px) rotate(1deg); }
+            25% { transform: translateY(-6px) rotate(1deg); }
             50% { transform: translateY(0) rotate(0deg); }
-            75% { transform: translateY(-4px) rotate(-1deg); }
+            75% { transform: translateY(-3px) rotate(-1deg); }
           }
 
           @keyframes textShimmer {
@@ -504,29 +552,29 @@ const Index = () => {
             50% { transform: translateY(-5px); }
           }
 
-          @keyframes flowWave1 {
-            0%, 100% { stroke-dashoffset: 0; }
-            50% { stroke-dashoffset: 50; }
+          @keyframes smoothWave1 {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 35; }
           }
 
-          @keyframes flowWave2 {
-            0%, 100% { stroke-dashoffset: 0; }
-            50% { stroke-dashoffset: -30; }
+          @keyframes smoothWave2 {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -25; }
           }
 
-          @keyframes flowWave3 {
-            0%, 100% { stroke-dashoffset: 0; }
-            50% { stroke-dashoffset: 40; }
+          @keyframes smoothWave3 {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 20; }
           }
 
-          @keyframes cardFloat {
-            0%, 100% { transform: translateY(-8px); }
-            50% { transform: translateY(-12px); }
+          @keyframes connectionFlow {
+            0%, 100% { stroke-dashoffset: 0; opacity: 0.6; }
+            50% { stroke-dashoffset: 12; opacity: 1; }
           }
 
-          @keyframes iconFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-3px) rotate(5deg); }
+          @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
           }
 
           @keyframes statFloat {
