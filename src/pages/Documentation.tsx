@@ -203,7 +203,6 @@ const Documentation = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      {/* Header */}
       <header className="bg-white/95 backdrop-blur-xl border-b border-green-200/50 shadow-lg">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -234,7 +233,6 @@ const Documentation = () => {
             <TabsTrigger value="faq">FAQ</TabsTrigger>
           </TabsList>
 
-          {/* Getting Started Tab */}
           <TabsContent value="getting-started" className="space-y-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -245,7 +243,6 @@ const Documentation = () => {
               </p>
             </div>
 
-            {/* Progress Indicator */}
             <div className="flex justify-center mb-8">
               <div className="flex items-center space-x-4">
                 {gettingStartedSteps.map((_, index) => (
@@ -265,11 +262,10 @@ const Documentation = () => {
               </div>
             </div>
 
-            {/* Current Step */}
             <Card className="max-w-4xl mx-auto">
               <CardHeader className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <gettingStartedSteps[currentStep].icon className="w-8 h-8 text-white" />
+                  {React.createElement(gettingStartedSteps[currentStep].icon, { className: "w-8 h-8 text-white" })}
                 </div>
                 <CardTitle className="text-2xl">{gettingStartedSteps[currentStep].title}</CardTitle>
                 <CardDescription className="text-lg">
@@ -315,7 +311,6 @@ const Documentation = () => {
             </Card>
           </TabsContent>
 
-          {/* User Roles Tab */}
           <TabsContent value="user-roles" className="space-y-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -370,7 +365,6 @@ const Documentation = () => {
             </div>
           </TabsContent>
 
-          {/* Features Tab */}
           <TabsContent value="features" className="space-y-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -386,7 +380,7 @@ const Documentation = () => {
                 <div key={index}>
                   <div className="flex items-center space-x-3 mb-6">
                     <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-blue-600 rounded-xl flex items-center justify-center">
-                      <category.icon className="w-6 h-6 text-white" />
+                      {React.createElement(category.icon, { className: "w-6 h-6 text-white" })}
                     </div>
                     <h3 className="text-3xl font-bold text-gray-900">{category.category}</h3>
                   </div>
@@ -413,7 +407,6 @@ const Documentation = () => {
             </div>
           </TabsContent>
 
-          {/* Workflows Tab */}
           <TabsContent value="workflows" className="space-y-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -505,7 +498,6 @@ const Documentation = () => {
             </div>
           </TabsContent>
 
-          {/* FAQ Tab */}
           <TabsContent value="faq" className="space-y-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
