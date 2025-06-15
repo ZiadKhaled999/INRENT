@@ -66,14 +66,21 @@ const HouseholdDetail = () => {
   }, [id]);
 
   const fetchUserProfile = async () => {
+    if (!user?.id) {
+      console.log('No user ID available');
+      return;
+    }
+
     try {
+      console.log('Fetching user profile for user:', user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('user_type')
-        .eq('id', user?.id)
+        .eq('id', user.id)
         .single();
 
       if (error) throw error;
+      console.log('User profile data:', data);
       setUserProfile(data);
     } catch (error: any) {
       console.error('Error fetching user profile:', error);
@@ -101,41 +108,82 @@ const HouseholdDetail = () => {
       if (membersError) throw membersError;
       setMembers(membersData);
 
-      // Fetch bills with splits and profile data
+      // Fetch bills with splits - Fixed query to avoid relationship error
       const { data: billsData, error: billsError } = await supabase
         .from('bills')
-        .select(`
-          *,
-          bill_splits (
-            *,
-            profiles:user_id (
-              full_name,
-              email
-            )
-          )
-        `)
+        .select('*')
         .eq('household_id', id)
         .order('created_at', { ascending: false });
 
       if (billsError) throw billsError;
 
-      // Transform the data to match our Bill interface
-      const transformedBills = billsData?.map(bill => ({
-        id: bill.id,
-        month_year: bill.month_year,
-        total_amount: bill.total_amount,
-        due_date: bill.due_date,
-        status: bill.status,
-        splits: bill.bill_splits?.map((split: any) => ({
-          id: split.id,
-          user_id: split.user_id,
-          amount: split.amount,
-          status: split.status,
-          user_profile: split.profiles
-        })) || []
-      })) || [];
+      // Fetch bill splits separately with profile data
+      if (billsData && billsData.length > 0) {
+        const billIds = billsData.map(bill => bill.id);
+        
+        const { data: splitsData, error: splitsError } = await supabase
+          .from('bill_splits')
+          .select(`
+            *,
+            profiles!bill_splits_user_id_fkey (
+              full_name,
+              email
+            )
+          `)
+          .in('bill_id', billIds);
 
-      setBills(transformedBills);
+        if (splitsError) {
+          console.error('Error fetching splits:', splitsError);
+          // If we can't fetch splits with profiles, fetch splits without profiles
+          const { data: basicSplitsData, error: basicSplitsError } = await supabase
+            .from('bill_splits')
+            .select('*')
+            .in('bill_id', billIds);
+
+          if (basicSplitsError) throw basicSplitsError;
+
+          // Group splits by bill_id and transform data
+          const transformedBills = billsData.map(bill => ({
+            id: bill.id,
+            month_year: bill.month_year,
+            total_amount: bill.total_amount,
+            due_date: bill.due_date,
+            status: bill.status,
+            splits: basicSplitsData?.filter(split => split.bill_id === bill.id).map(split => ({
+              id: split.id,
+              user_id: split.user_id,
+              amount: split.amount,
+              status: split.status,
+              user_profile: {
+                full_name: 'Unknown User',
+                email: 'Unknown'
+              }
+            })) || []
+          }));
+
+          setBills(transformedBills);
+        } else {
+          // Group splits by bill_id and transform data
+          const transformedBills = billsData.map(bill => ({
+            id: bill.id,
+            month_year: bill.month_year,
+            total_amount: bill.total_amount,
+            due_date: bill.due_date,
+            status: bill.status,
+            splits: splitsData?.filter(split => split.bill_id === bill.id).map(split => ({
+              id: split.id,
+              user_id: split.user_id,
+              amount: split.amount,
+              status: split.status,
+              user_profile: split.profiles
+            })) || []
+          }));
+
+          setBills(transformedBills);
+        }
+      } else {
+        setBills([]);
+      }
 
     } catch (error: any) {
       console.error('Error fetching household data:', error);
