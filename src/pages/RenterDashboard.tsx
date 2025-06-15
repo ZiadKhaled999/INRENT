@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,9 +106,32 @@ const RenterDashboard = () => {
 
   const totalRentCollected = households.reduce((sum, h) => sum + Number(h.rent_amount), 0);
 
-  const handleDelete = async (householdId: string) => {
+  const handleDeleteProperty = (household: Household) => {
+    setDeleteTargetId(household.id);
+  };
+
+  const confirmDelete = async (householdId: string) => {
     setDeleting(true);
     try {
+      // Find the household to check resident count
+      const household = households.find(h => h.id === householdId);
+      
+      if (!household) {
+        toast({
+          title: "Error",
+          description: "Household not found.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // If there are no residents, delete immediately
+      if (household.resident_count === 0) {
+        await deleteHousehold(householdId);
+        return;
+      }
+
+      // If there are residents, check payment conditions
       // 1. Check for any running/pending bills for the household
       const { data: bills, error: billsError } = await supabase
         .from('bills')
@@ -152,7 +176,24 @@ const RenterDashboard = () => {
         }
       }
 
-      // 3. Delete the household (cascades will handle members, bills, etc.)
+      // If all conditions are met, proceed with deletion
+      await deleteHousehold(householdId);
+
+    } catch (error: any) {
+      toast({
+        title: "Failed to delete property",
+        description: error.message,
+        variant: "destructive"
+      });
+      setDeleteTargetId(null);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const deleteHousehold = async (householdId: string) => {
+    try {
+      // Delete the household (cascades will handle members, bills, etc.)
       const { error: deleteError } = await supabase
         .from('households')
         .delete()
@@ -167,16 +208,8 @@ const RenterDashboard = () => {
       });
       setDeleteTargetId(null);
       fetchRenterData();
-
     } catch (error: any) {
-      toast({
-        title: "Failed to delete property",
-        description: error.message,
-        variant: "destructive"
-      });
-      setDeleteTargetId(null);
-    } finally {
-      setDeleting(false);
+      throw error;
     }
   };
 
@@ -336,7 +369,6 @@ const RenterDashboard = () => {
                           <Button variant="outline" className="w-full" size="sm">
                             Manage Property
                           </Button>
-                          {/* Delete button only visible to owner */}
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
@@ -345,8 +377,8 @@ const RenterDashboard = () => {
                                 disabled={deleting}
                                 className="ml-2"
                                 onClick={e => {
-                                  e.stopPropagation(); // Prevent card navigation
-                                  setDeleteTargetId(household.id);
+                                  e.stopPropagation();
+                                  handleDeleteProperty(household);
                                 }}
                                 aria-label="Delete property"
                               >
@@ -358,8 +390,18 @@ const RenterDashboard = () => {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Delete Property</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to delete <span className="font-bold">{household.name}</span>?<br />
-                                    This cannot be undone. All data will be lost.
+                                    {household.resident_count === 0 ? (
+                                      <>
+                                        Are you sure you want to delete <span className="font-bold">{household.name}</span>?<br />
+                                        This action cannot be undone and all data will be permanently deleted.
+                                      </>
+                                    ) : (
+                                      <>
+                                        This property has <span className="font-bold">{household.resident_count} resident(s)</span>. 
+                                        Deleting it will permanently remove all data including resident information, payment history, and bills.<br /><br />
+                                        Are you sure you want to permanently delete <span className="font-bold">{household.name}</span>?
+                                      </>
+                                    )}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -367,13 +409,14 @@ const RenterDashboard = () => {
                                     disabled={deleting}
                                     onClick={() => setDeleteTargetId(null)}
                                   >
-                                    Cancel
+                                    No, Keep It
                                   </AlertDialogCancel>
                                   <AlertDialogAction
                                     disabled={deleting}
-                                    onClick={() => handleDelete(household.id)}
+                                    onClick={() => confirmDelete(household.id)}
+                                    className="bg-red-600 hover:bg-red-700"
                                   >
-                                    {deleting ? 'Deleting...' : 'Delete'}
+                                    {deleting ? 'Deleting...' : 'Yes, Delete'}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
