@@ -9,6 +9,9 @@ import DashboardHeader from "@/components/resident/DashboardHeader";
 import StatsCards from "@/components/resident/StatsCards";
 import HouseholdsList from "@/components/resident/HouseholdsList";
 import RecentPayments from "@/components/resident/RecentPayments";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import PhoneVerification from '@/components/PhoneVerification';
 
 interface HouseholdMember {
   id: string;
@@ -45,7 +48,7 @@ const ResidentDashboard = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showProfile, setShowProfile] = useState(false);
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -96,6 +99,23 @@ const ResidentDashboard = () => {
             title: "Removed from household",
             description: "You have been removed from a household.",
           });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'household_members',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Member data changed:', payload);
+          toast({
+            title: "Household Updated",
+            description: "Your household information has been updated.",
+          });
+          fetchResidentData();
         }
       )
       .subscribe();
@@ -247,20 +267,20 @@ const ResidentDashboard = () => {
   const nextDueDate = getNextDueDate();
   const totalRent = getTotalRent();
   const pendingPayments = getPendingPayments();
+  
+  const handleProfileUpdate = () => {
+    fetchUserProfile();
+    setShowPhoneVerification(false);
+    toast({
+        title: "Profile updated!",
+        description: "Your phone number information has been refreshed.",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-2 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        <DashboardHeader onToggleProfile={() => setShowProfile(p => !p)} />
-
-        {/* Profile Section */}
-        {showProfile && (
-          <div className="flex justify-center px-2">
-            <div className="w-full max-w-md">
-              <UserProfile userProfile={userProfile} />
-            </div>
-          </div>
-        )}
+        <DashboardHeader userProfile={userProfile} onVerifyPhone={() => setShowPhoneVerification(true)} />
 
         <StatsCards 
           totalRent={totalRent}
@@ -268,24 +288,38 @@ const ResidentDashboard = () => {
           pendingPayments={pendingPayments}
         />
 
-        {/* Mobile-Responsive Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-          {/* Join Household Form - Full width on mobile when no households */}
-          {memberData.length === 0 ? (
-            <div className="xl:col-span-2">
-              <JoinHouseholdForm />
+        {memberData.length === 0 ? (
+          <JoinHouseholdForm onJoin={fetchResidentData} />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="lg:col-span-2 space-y-4">
+              <HouseholdsList memberData={memberData} />
             </div>
-          ) : (
-            <div className="order-2 xl:order-1">
-              <JoinHouseholdForm />
+            <div className="space-y-4">
+              <RecentPayments payments={payments} />
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="w-full">
+                    Join Another Household
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Join a new household</DialogTitle>
+                  </DialogHeader>
+                  <JoinHouseholdForm />
+                </DialogContent>
+              </Dialog>
             </div>
-          )}
-
-          <HouseholdsList memberData={memberData} />
-        </div>
-        
-        <RecentPayments payments={payments} />
+          </div>
+        )}
       </div>
+
+      <PhoneVerification
+        isOpen={showPhoneVerification}
+        onClose={() => setShowPhoneVerification(false)}
+        onVerified={handleProfileUpdate}
+      />
     </div>
   );
 };
