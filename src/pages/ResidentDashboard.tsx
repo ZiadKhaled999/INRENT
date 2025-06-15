@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import JoinHouseholdForm from "@/components/JoinHouseholdForm";
 import NotificationCenter from "@/components/NotificationCenter";
 import UserProfile from "@/components/UserProfile";
+import AppLogoWithBg from "@/components/AppLogoWithBg";
 
 interface HouseholdMember {
   id: string;
@@ -179,8 +180,8 @@ const ResidentDashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your dashboard...</p>
+          <AppLogoWithBg size={60} />
+          <p className="text-gray-600 mt-4">Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -195,9 +196,12 @@ const ResidentDashboard = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Resident Dashboard</h1>
-            <p className="text-gray-600">Manage your rent payments and household memberships</p>
+          <div className="flex items-center space-x-4">
+            <AppLogoWithBg size={48} />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Resident Dashboard</h1>
+              <p className="text-gray-600">Manage your rent payments and household memberships</p>
+            </div>
           </div>
           <div className="flex items-center space-x-4">
             <Button 

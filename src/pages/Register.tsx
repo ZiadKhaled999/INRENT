@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import AppLogoWithBg from "@/components/AppLogoWithBg";
 
 const LOGO_SRC = "/lovable-uploads/ff5803ec-2385-43a8-aebc-d33664bd076d.png";
 
@@ -84,14 +85,9 @@ const Register = () => {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2 mb-4">
-            <img
-              src={LOGO_SRC}
-              alt="Rentable logo"
-              className="w-8 h-8 rounded-lg object-contain bg-transparent"
-              loading="lazy"
-            />
-            <span className="text-2xl font-bold text-gray-900">Rentable</span>
+          <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-4">
+            <AppLogoWithBg size={60} />
+            <span className="text-2xl font-bold text-gray-900 mt-1">Rentable</span>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Rentable</h1>
           <p className="text-gray-600">Start splitting rent fairly with your roommates</p>
