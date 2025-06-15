@@ -109,11 +109,11 @@ const Index = () => {
           <nav className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4 group cursor-pointer">
-                <div className="relative transition-all duration-500 group-hover:scale-110 animate-[logoFloat_4s_ease-in-out_infinite]">
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full blur-lg opacity-30 animate-pulse"></div>
+                <div className="relative transition-all duration-500 group-hover:scale-110">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full blur-lg opacity-30"></div>
                   <AppLogoWithBg size={42} className="relative z-10 shadow-xl" />
                 </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-700 via-green-600 to-teal-700 bg-clip-text text-transparent animate-[textShimmer_3s_ease-in-out_infinite]">
+                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-700 via-green-600 to-teal-700 bg-clip-text text-transparent">
                   Rentable
                 </span>
               </div>
@@ -128,10 +128,6 @@ const Index = () => {
                   Mission
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
-                <a href="#pricing" className="text-slate-700 hover:text-emerald-600 transition-all duration-300 font-medium relative group">
-                  Pricing
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-300 group-hover:w-full"></span>
-                </a>
               </div>
 
               <div className="hidden md:flex items-center space-x-3">
@@ -144,7 +140,7 @@ const Index = () => {
                 </Button>
                 <Button 
                   onClick={() => navigate('/register')}
-                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium px-6 shadow-lg hover:shadow-xl transition-all duration-300 border-0 animate-[buttonGlow_2s_ease-in-out_infinite]"
+                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium px-6 shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                 >
                   Get Started
                 </Button>
@@ -159,13 +155,12 @@ const Index = () => {
               </button>
             </div>
 
-            {/* Mobile Menu */}
+            {/* Mobile Menu - Rounded and Semi-transparent */}
             {isMobileMenuOpen && (
-              <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-emerald-200/50 shadow-lg animate-[slideDown_0.3s_ease-out]">
-                <div className="container mx-auto px-6 py-6 space-y-4">
+              <div className="md:hidden absolute top-full left-4 right-4 bg-white/90 backdrop-blur-xl border border-emerald-200/50 shadow-2xl animate-[slideDown_0.3s_ease-out] rounded-2xl mt-2">
+                <div className="px-6 py-6 space-y-4">
                   <a href="#features" className="block text-slate-700 hover:text-emerald-600 font-medium py-2 transition-colors">Features</a>
                   <a href="#mission" className="block text-slate-700 hover:text-emerald-600 font-medium py-2 transition-colors">Mission</a>
-                  <a href="#pricing" className="block text-slate-700 hover:text-emerald-600 font-medium py-2 transition-colors">Pricing</a>
                   <div className="flex flex-col space-y-3 pt-4 border-t border-emerald-200">
                     <Button 
                       variant="ghost" 
@@ -192,13 +187,13 @@ const Index = () => {
           <div className="container mx-auto text-center">
             <div className="max-w-5xl mx-auto">
               <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200 rounded-full text-emerald-700 text-sm font-medium mb-8 animate-[fadeInUp_0.8s_ease-out] shadow-lg">
-                <Bell className="w-4 h-4 mr-2 animate-[ring_2s_ease-in-out_infinite]" />
+                <Bell className="w-4 h-4 mr-2" />
                 Always free, always transparent
               </div>
               
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-slate-900 mb-8 leading-[0.9] tracking-tight animate-[fadeInUp_1s_ease-out_0.2s_both]">
                 Never Chase Your
-                <span className="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 bg-clip-text text-transparent block mt-2 animate-[textFlow_4s_ease-in-out_infinite]">
+                <span className="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 bg-clip-text text-transparent block mt-2">
                   Roommates
                 </span>
                 <span className="text-slate-600 block mt-2 text-4xl md:text-5xl lg:text-6xl animate-[fadeInUp_1s_ease-out_0.4s_both]">
@@ -215,10 +210,10 @@ const Index = () => {
                 <Button 
                   size="lg" 
                   onClick={() => navigate('/register')}
-                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 group border-0 animate-[buttonPulse_3s_ease-in-out_infinite]"
+                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 group border-0"
                 >
                   Start Splitting Rent
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform animate-[arrowFlow_2s_ease-in-out_infinite]" />
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button 
                   variant="outline" 
@@ -230,15 +225,15 @@ const Index = () => {
               </div>
 
               <div className="flex flex-wrap justify-center items-center gap-8 text-slate-500 text-sm animate-[fadeInUp_1s_ease-out_1s_both]">
-                <div className="flex items-center gap-2 animate-[float_3s_ease-in-out_infinite]">
+                <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
                   No credit card required
                 </div>
-                <div className="flex items-center gap-2 animate-[float_3s_ease-in-out_infinite_0.5s]">
+                <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
                   Setup in 30 seconds
                 </div>
-                <div className="flex items-center gap-2 animate-[float_3s_ease-in-out_infinite_1s]">
+                <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
                   Privacy first
                 </div>
@@ -409,12 +404,12 @@ const Index = () => {
               {stats.map((stat, index) => (
                 <div 
                   key={index} 
-                  className="text-center p-8 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-500 hover:-translate-y-1 animate-[fadeInUp_0.6s_ease-out] hover:animate-[statFloat_4s_ease-in-out_infinite]"
+                  className="text-center p-8 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-500 hover:-translate-y-1 animate-[fadeInUp_0.6s_ease-out]"
                   style={{ 
                     animationDelay: `${index * 200}ms`
                   }}
                 >
-                  <div className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-green-300 via-emerald-300 to-teal-300 bg-clip-text text-transparent animate-[numberGlow_3s_ease-in-out_infinite]">
+                  <div className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-green-300 via-emerald-300 to-teal-300 bg-clip-text text-transparent">
                     {stat.value}
                   </div>
                   <div className="text-xl font-semibold mb-2">{stat.label}</div>
@@ -425,7 +420,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
+        {/* CTA Section - Static Button */}
         <section className="py-32 px-6 bg-gradient-to-br from-green-50 to-emerald-50 relative overflow-hidden">
           <div className="absolute inset-0">
             <svg className="absolute inset-0 w-full h-full opacity-5" viewBox="0 0 1200 800">
@@ -442,7 +437,7 @@ const Index = () => {
             <div className="max-w-4xl mx-auto">
               <h2 className="text-4xl md:text-6xl font-bold text-slate-900 mb-8 tracking-tight animate-[fadeInUp_0.8s_ease-out]">
                 Ready to Transform Your
-                <span className="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent block animate-[textFlow_4s_ease-in-out_infinite]">
+                <span className="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent block">
                   Rent Experience?
                 </span>
               </h2>
@@ -453,12 +448,12 @@ const Index = () => {
                 <Button 
                   size="lg" 
                   onClick={() => navigate('/register')}
-                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-12 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 group border-0 animate-[finalCTA_4s_ease-in-out_infinite]"
+                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-12 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 group border-0"
                 >
                   Get Started for Free
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
-                <div className="flex items-center text-sm text-slate-500 mt-4 sm:mt-0 sm:ml-8 animate-[float_3s_ease-in-out_infinite]">
+                <div className="flex items-center text-sm text-slate-500 mt-4 sm:mt-0 sm:ml-8">
                   <CheckCircle className="w-4 h-4 text-emerald-500 mr-2" />
                   No credit card required
                 </div>
@@ -467,16 +462,20 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Footer */}
+        {/* Footer with Privacy Policy Links */}
         <footer className="bg-white border-t border-emerald-200 py-16">
           <div className="container mx-auto px-6 text-center">
             <div className="flex items-center justify-center space-x-3 mb-6 animate-[fadeInUp_0.6s_ease-out]">
               <AppLogoWithBg size={32} shadow={false} />
               <span className="text-2xl font-bold bg-gradient-to-r from-emerald-700 to-green-700 bg-clip-text text-transparent">Rentable</span>
             </div>
-            <p className="text-slate-600 max-w-2xl mx-auto font-light animate-[fadeInUp_0.6s_ease-out_0.2s_both]">
-              Made with ❤️ for the global renting community. Always free, always open.
-            </p>
+            <div className="flex flex-wrap justify-center items-center gap-6 text-slate-600 animate-[fadeInUp_0.6s_ease-out_0.2s_both]">
+              <a href="#privacy" className="hover:text-emerald-600 transition-colors">Privacy Policy</a>
+              <span className="text-slate-400">•</span>
+              <a href="#terms" className="hover:text-emerald-600 transition-colors">Terms of Service</a>
+              <span className="text-slate-400">•</span>
+              <a href="#contact" className="hover:text-emerald-600 transition-colors">Contact</a>
+            </div>
           </div>
         </footer>
       </div>
@@ -515,43 +514,6 @@ const Index = () => {
             80% { transform: translateX(15px) scaleY(0.95); }
           }
 
-          @keyframes logoFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-6px) rotate(1deg); }
-            50% { transform: translateY(0) rotate(0deg); }
-            75% { transform: translateY(-3px) rotate(-1deg); }
-          }
-
-          @keyframes textShimmer {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-          }
-
-          @keyframes buttonGlow {
-            0%, 100% { box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); }
-            50% { box-shadow: 0 15px 35px rgba(16, 185, 129, 0.5); }
-          }
-
-          @keyframes buttonPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-          }
-
-          @keyframes arrowFlow {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(5px); }
-          }
-
-          @keyframes textFlow {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-          }
-
-          @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-          }
-
           @keyframes smoothWave1 {
             0% { stroke-dashoffset: 0; }
             100% { stroke-dashoffset: 35; }
@@ -577,16 +539,6 @@ const Index = () => {
             50% { transform: scale(1.1); }
           }
 
-          @keyframes statFloat {
-            0%, 100% { transform: translateY(-4px); }
-            50% { transform: translateY(-8px); }
-          }
-
-          @keyframes numberGlow {
-            0%, 100% { text-shadow: 0 0 10px rgba(52, 211, 153, 0.3); }
-            50% { text-shadow: 0 0 20px rgba(52, 211, 153, 0.6); }
-          }
-
           @keyframes twinkle {
             0%, 100% { opacity: 0.3; }
             50% { opacity: 1; }
@@ -595,17 +547,6 @@ const Index = () => {
           @keyframes gentleFlow {
             0% { stroke-dashoffset: 0; }
             100% { stroke-dashoffset: 100; }
-          }
-
-          @keyframes finalCTA {
-            0%, 100% { transform: scale(1); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); }
-            50% { transform: scale(1.05); box-shadow: 0 20px 40px rgba(16, 185, 129, 0.4); }
-          }
-
-          @keyframes ring {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-10deg); }
-            75% { transform: rotate(10deg); }
           }
 
           @keyframes slideDown {
