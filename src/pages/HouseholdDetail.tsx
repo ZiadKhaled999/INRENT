@@ -203,6 +203,26 @@ const HouseholdDetail = () => {
     try {
       const now = new Date();
       const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      
+      // Check if bill already exists for this month
+      const { data: existingBill, error: checkError } = await supabase
+        .from('bills')
+        .select('id, month_year')
+        .eq('household_id', household.id)
+        .eq('month_year', monthYear)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existingBill) {
+        toast({
+          title: "Bill already exists",
+          description: `A bill for ${monthYear} has already been created for this household.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       const dueDate = new Date(now.getFullYear(), now.getMonth(), household.due_day);
 
       // Create bill
