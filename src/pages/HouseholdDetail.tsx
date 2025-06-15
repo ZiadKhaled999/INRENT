@@ -243,6 +243,9 @@ const HouseholdDetail = () => {
     );
   }
 
+  // Filter residents only (exclude the renter)
+  const residents = members.filter(member => member.role === 'resident');
+
   const userRole = getUserRole();
   const currentUserIsCreator = isCreator();
 
@@ -339,7 +342,7 @@ const HouseholdDetail = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Residents</p>
-                      <p className="text-xl font-bold">{members.filter(m => m.role === 'resident').length}</p>
+                      <p className="text-xl font-bold">{residents.length}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -435,30 +438,36 @@ const HouseholdDetail = () => {
 
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
-            {/* Members List */}
+            {/* Members List - Only show residents */}
             <Card>
               <CardHeader>
-                <CardTitle>Household Members</CardTitle>
-                <CardDescription>{members.length} member(s)</CardDescription>
+                <CardTitle>Residents</CardTitle>
+                <CardDescription>{residents.length} resident(s) - rent split among them</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {members.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium truncate">{member.display_name}</p>
-                        <p className="text-sm text-gray-600 truncate">{member.email}</p>
+                {residents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-600 mb-2">No residents yet</p>
+                    {currentUserIsCreator && (
+                      <p className="text-sm text-gray-500">Invite residents to start splitting rent</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {residents.map((member) => (
+                      <div key={member.id} className="flex items-center justify-between">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">{member.display_name}</p>
+                          <p className="text-sm text-gray-600 truncate">{member.email}</p>
+                        </div>
+                        <span className="px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2 bg-blue-100 text-blue-800">
+                          resident
+                        </span>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${
-                        member.role === 'resident' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : 'bg-purple-100 text-purple-800'
-                      }`}>
-                        {member.role}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
