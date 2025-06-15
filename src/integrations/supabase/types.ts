@@ -213,28 +213,37 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by: string
+          deletion_reason: string | null
+          deletion_scheduled_at: string | null
           due_day: number
           id: string
           name: string
           rent_amount: number
+          scheduled_for_deletion: boolean | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           created_by: string
+          deletion_reason?: string | null
+          deletion_scheduled_at?: string | null
           due_day: number
           id?: string
           name: string
           rent_amount: number
+          scheduled_for_deletion?: boolean | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           created_by?: string
+          deletion_reason?: string | null
+          deletion_scheduled_at?: string | null
           due_day?: number
           id?: string
           name?: string
           rent_amount?: number
+          scheduled_for_deletion?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
@@ -307,11 +316,63 @@ export type Database = {
         }
         Relationships: []
       }
+      rent_periods: {
+        Row: {
+          created_at: string
+          due_date: string
+          end_date: string
+          household_id: string
+          id: string
+          month_year: string
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          due_date: string
+          end_date: string
+          household_id: string
+          id?: string
+          month_year: string
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          due_date?: string
+          end_date?: string
+          household_id?: string
+          id?: string
+          month_year?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rent_periods_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      check_overdue_payments: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      end_rent_period: {
+        Args: { target_household_id: string; target_month_year: string }
+        Returns: Json
+      }
       generate_invitation_token: {
         Args: Record<PropertyKey, never>
         Returns: string

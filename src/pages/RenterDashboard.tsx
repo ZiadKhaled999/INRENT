@@ -158,14 +158,12 @@ const RenterDashboard = () => {
 
         if (notificationError) {
           console.error('Error creating notifications:', notificationError);
-          // Don't throw error here, just log it so deletion can continue
         } else {
           console.log('Deletion notifications sent to residents');
         }
       }
     } catch (error: any) {
       console.error('Error sending deletion notifications:', error);
-      // Don't throw error here, just log it so deletion can continue
     }
   };
 
@@ -191,7 +189,6 @@ const RenterDashboard = () => {
         await sendDeletionNotifications(householdId, household.name);
 
         // Check payment conditions
-        // 1. Check for any running/pending bills for the household
         const { data: bills, error: billsError } = await supabase
           .from('bills')
           .select('id, status')
@@ -212,7 +209,7 @@ const RenterDashboard = () => {
           return;
         }
 
-        // 2. Check all splits are paid
+        // Check all splits are paid
         if (bills && bills.length > 0) {
           const billIds = bills.map(b => b.id);
           const { data: allSplits, error: splitsError } = await supabase
