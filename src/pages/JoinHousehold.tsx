@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -77,27 +78,36 @@ const JoinHousehold = () => {
     try {
       console.log('Fetching household with ID:', id);
       
-      // Fetch household data without requiring authentication for viewing
+      // Fetch household data - make sure we're querying the correct table
       const { data: householdData, error: householdError } = await supabase
         .from('households')
-        .select('*')
+        .select('id, name, rent_amount, due_day, created_by')
         .eq('id', id)
-        .single();
+        .maybeSingle();
+
+      console.log('Household query result:', { householdData, householdError });
 
       if (householdError) {
         console.error('Error fetching household:', householdError);
-        if (householdError.code === 'PGRST116') {
-          // No rows returned
-          throw new Error('Household not found');
-        }
         throw householdError;
       }
 
+      if (!householdData) {
+        console.log('No household found with ID:', id);
+        setHousehold(null);
+        setLoading(false);
+        return;
+      }
+
       // Get member count
-      const { count } = await supabase
+      const { count, error: countError } = await supabase
         .from('household_members')
         .select('*', { count: 'exact', head: true })
         .eq('household_id', id);
+
+      if (countError) {
+        console.error('Error fetching member count:', countError);
+      }
 
       setHousehold({
         ...householdData,
@@ -122,12 +132,17 @@ const JoinHousehold = () => {
 
     try {
       // Check if user is already a member
-      const { data: existingMember } = await supabase
+      const { data: existingMember, error: memberError } = await supabase
         .from('household_members')
         .select('id')
         .eq('household_id', id)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
+
+      if (memberError) {
+        console.error('Error checking membership:', memberError);
+        return;
+      }
 
       if (existingMember) {
         setAlreadyMember(true);
@@ -135,14 +150,18 @@ const JoinHousehold = () => {
       }
 
       // Check if user has already sent a request
-      const { data: existingRequest } = await supabase
+      const { data: existingRequest, error: requestError } = await supabase
         .from('notifications')
         .select('id')
-        .eq('user_id', household?.created_by)
         .eq('type', 'join_request')
         .ilike('message', `%${user.email}%`)
         .ilike('message', `%${id}%`)
-        .single();
+        .maybeSingle();
+
+      if (requestError) {
+        console.error('Error checking existing requests:', requestError);
+        return;
+      }
 
       if (existingRequest) {
         setRequestSent(true);
