@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,8 +89,14 @@ const RentPeriodManager: React.FC<RentPeriodManagerProps> = ({ householdId, isCr
 
       if (error) throw error;
 
-      // Type assertion for the response
-      const response = data as EndRentPeriodResponse;
+      // Safely handle the Json type from Supabase
+      let response: EndRentPeriodResponse;
+      
+      if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+        response = data as unknown as EndRentPeriodResponse;
+      } else {
+        throw new Error('Invalid response format from server');
+      }
 
       if (response?.success) {
         toast({
