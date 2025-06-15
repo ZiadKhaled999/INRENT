@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,11 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Home, Link } from "lucide-react";
 
-const JoinHouseholdForm = () => {
+interface JoinHouseholdFormProps {
+  onJoin?: () => void;
+}
+
+const JoinHouseholdForm = ({ onJoin }: JoinHouseholdFormProps) => {
   const [inviteLink, setInviteLink] = useState('');
   const [processing, setProcessing] = useState(false);
   const navigate = useNavigate();
@@ -69,6 +72,7 @@ const JoinHouseholdForm = () => {
 
       // Navigate to the join page with the extracted token
       navigate(`/join?token=${token}`);
+      onJoin?.();
       
     } catch (error) {
       console.error('Error processing invite link:', error);
