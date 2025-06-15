@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,15 +52,15 @@ const Index = () => {
     {
       icon: Heart,
       title: "Community Driven",
-      description: "Built by renters, for renters. Always free, always open.",
+      description: "Built by renters, for renters. Focused on what matters most.",
       gradient: "from-green-500 to-teal-500"
     }
   ];
 
   const stats = [
     { label: "Always Free", value: "100%", description: "No hidden costs ever" },
-    { label: "Open Source", value: "∞", description: "Transparent development" },
-    { label: "Global Access", value: "24/7", description: "Available worldwide" }
+    { label: "Secure Platform", value: "24/7", description: "Reliable and protected" },
+    { label: "Global Access", value: "∞", description: "Available worldwide" }
   ];
 
   return (
