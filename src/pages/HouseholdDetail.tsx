@@ -409,10 +409,16 @@ const HouseholdDetail = () => {
                 <Share className="w-5 h-5 text-blue-600" />
                 <CardTitle>Invite Roommates</CardTitle>
               </div>
-              <CardDescription>Share this link to invite roommates. No signup required initially!</CardDescription>
+              <CardDescription>
+                Use the button below to generate a secure, one-time invitation link for a roommate.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <InviteLink householdId={household.id} householdName={household.name} />
+              <p className="mb-4 text-gray-700">
+                To invite a roommate, use the "Invite Resident" button. Each invite is secure and can only be used once.
+              </p>
+              {/* You might already have the InviteResidentModal somewhere else, if not, you can add it here */}
+              {/* <InviteResidentModal householdId={household.id} householdName={household.name} /> */}
             </CardContent>
           </Card>
         )}
