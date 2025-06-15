@@ -23,7 +23,7 @@ interface HouseholdMember {
     name: string;
     rent_amount: number;
     due_day: number;
-  };
+  } | null;
 }
 
 interface Payment {
@@ -205,6 +205,9 @@ const ResidentDashboard = () => {
     let nextDue = null;
     
     memberData.forEach(member => {
+      // Additional safety check for household
+      if (!member.household) return;
+      
       const dueDay = member.household.due_day;
       let dueDate = new Date(currentYear, currentMonth, dueDay);
       
@@ -223,6 +226,8 @@ const ResidentDashboard = () => {
 
   const getTotalRent = () => {
     return memberData.reduce((total, member) => {
+      // Additional safety check for household
+      if (!member.household) return total;
       return total + Number(member.household.rent_amount);
     }, 0);
   };
@@ -362,27 +367,35 @@ const ResidentDashboard = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {memberData.map((member) => (
-                    <div 
-                      key={member.id}
-                      className="p-3 sm:p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors active:bg-gray-100 touch-manipulation"
-                      onClick={() => navigate(`/household/${member.household_id}`)}
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{member.household.name}</h3>
-                          <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                            Rent: ${member.household.rent_amount.toLocaleString()} • Due: {member.household.due_day}th
-                          </p>
-                        </div>
-                        <div className="flex justify-between sm:justify-end items-center">
-                          <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {member.role}
-                          </span>
+                  {memberData.map((member) => {
+                    // Additional safety check for household before rendering
+                    if (!member.household) {
+                      console.warn('Skipping member with null household:', member);
+                      return null;
+                    }
+                    
+                    return (
+                      <div 
+                        key={member.id}
+                        className="p-3 sm:p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors active:bg-gray-100 touch-manipulation"
+                        onClick={() => navigate(`/household/${member.household_id}`)}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{member.household.name}</h3>
+                            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                              Rent: ${member.household.rent_amount.toLocaleString()} • Due: {member.household.due_day}th
+                            </p>
+                          </div>
+                          <div className="flex justify-between sm:justify-end items-center">
+                            <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              {member.role}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  }).filter(Boolean)}
                 </div>
               )}
             </CardContent>
