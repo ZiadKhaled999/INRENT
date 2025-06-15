@@ -122,6 +122,8 @@ const RenterDashboard = () => {
           description: "Household not found.",
           variant: "destructive",
         });
+        setDeleting(false);
+        setDeleteTargetId(null);
         return;
       }
 
@@ -186,29 +188,43 @@ const RenterDashboard = () => {
         variant: "destructive"
       });
       setDeleteTargetId(null);
-    } finally {
       setDeleting(false);
     }
   };
 
   const deleteHousehold = async (householdId: string) => {
     try {
+      console.log('Deleting household:', householdId);
+      
       // Delete the household (cascades will handle members, bills, etc.)
       const { error: deleteError } = await supabase
         .from('households')
         .delete()
         .eq('id', householdId);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('Delete error:', deleteError);
+        throw deleteError;
+      }
 
+      console.log('Household deleted successfully');
+      
       toast({
         title: "Property deleted",
         description: "The household and all related data have been deleted.",
         variant: "default",
       });
+      
+      // Reset delete state
       setDeleteTargetId(null);
-      fetchRenterData();
+      setDeleting(false);
+      
+      // Immediately refresh the data to update the UI
+      await fetchRenterData();
+      
     } catch (error: any) {
+      console.error('Error in deleteHousehold:', error);
+      setDeleting(false);
       throw error;
     }
   };
