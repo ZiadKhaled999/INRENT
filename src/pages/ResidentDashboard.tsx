@@ -1,25 +1,34 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Users, DollarSign, Calendar, Clock, Check, Plus } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Home, DollarSign, Calendar, Users, Bell } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import JoinHouseholdForm from "@/components/JoinHouseholdForm";
+import NotificationCenter from "@/components/NotificationCenter";
 
-interface Household {
+interface HouseholdMember {
   id: string;
-  name: string;
-  rent_amount: number;
-  due_day: number;
+  household_id: string;
+  display_name: string;
+  email: string;
+  role: string;
+  household: {
+    id: string;
+    name: string;
+    rent_amount: number;
+    due_day: number;
+  };
 }
 
 interface Payment {
   id: string;
   amount: number;
   status: string;
+  paid_at: string | null;
   bill: {
     month_year: string;
     due_date: string;
@@ -30,36 +39,34 @@ interface Payment {
 }
 
 const ResidentDashboard = () => {
-  const [households, setHouseholds] = useState<Household[]>([]);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [memberData, setMemberData] = useState<HouseholdMember[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-  const { user, signOut, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Only fetch data when user is loaded and authenticated
-    if (!authLoading && user?.id) {
+    if (user) {
       fetchResidentData();
-    } else if (!authLoading && !user) {
-      // User is not authenticated, redirect to login
-      navigate('/login');
     }
-  }, [user, authLoading, navigate]);
+  }, [user]);
 
   const fetchResidentData = async () => {
-    if (!user?.id) {
-      console.error('User ID is not available');
-      return;
-    }
+    if (!user?.id) return;
 
     try {
       console.log('Fetching resident data for user:', user.id);
       
-      // Fetch households user is a member of
-      const { data: memberData, error: memberError } = await supabase
+      // Fetch household memberships
+      const { data: members, error: membersError } = await supabase
         .from('household_members')
         .select(`
+          id,
+          household_id,
+          display_name,
+          email,
+          role,
           household:households (
             id,
             name,
@@ -69,22 +76,19 @@ const ResidentDashboard = () => {
         `)
         .eq('user_id', user.id);
 
-      if (memberError) {
-        console.error('Error fetching household members:', memberError);
-        throw memberError;
-      }
+      if (membersError) throw membersError;
 
-      console.log('Member data:', memberData);
-      const householdsData = memberData?.map(m => m.household).filter(Boolean) || [];
-      setHouseholds(householdsData as Household[]);
+      console.log('Member data:', members);
+      setMemberData(members || []);
 
-      // Fetch user's payment history
-      const { data: paymentsData, error: paymentsError } = await supabase
+      // Fetch recent payments/bill splits
+      const { data: billSplits, error: paymentsError } = await supabase
         .from('bill_splits')
         .select(`
           id,
           amount,
           status,
+          paid_at,
           bill:bills (
             month_year,
             due_date,
@@ -95,20 +99,17 @@ const ResidentDashboard = () => {
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(5);
 
-      if (paymentsError) {
-        console.error('Error fetching payments:', paymentsError);
-        throw paymentsError;
-      }
+      if (paymentsError) throw paymentsError;
 
-      console.log('Payments data:', paymentsData);
-      setPayments(paymentsData || []);
+      console.log('Payments data:', billSplits);
+      setPayments(billSplits || []);
 
     } catch (error: any) {
       console.error('Error fetching resident data:', error);
       toast({
-        title: "Failed to load dashboard",
+        title: "Error loading data",
         description: error.message,
         variant: "destructive",
       });
@@ -117,51 +118,44 @@ const ResidentDashboard = () => {
     }
   };
 
-  const markPaymentPaid = async (paymentId: string) => {
-    if (!user?.id) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to mark payments as paid.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('bill_splits')
-        .update({
-          status: 'paid',
-          paid_at: new Date().toISOString(),
-          payment_method: 'manual'
-        })
-        .eq('id', paymentId)
-        .eq('user_id', user.id); // Ensure user can only update their own payments
-
-      if (error) throw error;
-
-      toast({
-        title: "Payment marked!",
-        description: "Your payment has been marked as paid.",
-      });
-
-      fetchResidentData();
-    } catch (error: any) {
-      console.error('Error marking payment:', error);
-      toast({
-        title: "Failed to mark payment",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+  const getNextDueDate = () => {
+    if (memberData.length === 0) return null;
+    
+    // Get the earliest due date from all households
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    let nextDue = null;
+    
+    memberData.forEach(member => {
+      const dueDay = member.household.due_day;
+      let dueDate = new Date(currentYear, currentMonth, dueDay);
+      
+      // If due date has passed this month, use next month
+      if (dueDate < today) {
+        dueDate = new Date(currentYear, currentMonth + 1, dueDay);
+      }
+      
+      if (!nextDue || dueDate < nextDue) {
+        nextDue = dueDate;
+      }
+    });
+    
+    return nextDue;
   };
 
-  const totalOwed = payments
-    .filter(p => p.status === 'pending')
-    .reduce((sum, p) => sum + Number(p.amount), 0);
+  const getTotalRent = () => {
+    return memberData.reduce((total, member) => {
+      return total + Number(member.household.rent_amount);
+    }, 0);
+  };
 
-  // Show loading while auth is loading
-  if (authLoading || loading) {
+  const getPendingPayments = () => {
+    return payments.filter(payment => payment.status === 'pending').length;
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -172,176 +166,161 @@ const ResidentDashboard = () => {
     );
   }
 
-  // If no user after auth loading is complete, return null (will redirect)
-  if (!user) {
-    return null;
-  }
+  const nextDueDate = getNextDueDate();
+  const totalRent = getTotalRent();
+  const pendingPayments = getPendingPayments();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg"></div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Resident Dashboard</h1>
-                <p className="text-gray-600">Your payment overview</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={() => navigate('/join/new')}>
-                <Plus className="w-4 h-4 mr-2" />
-                Join Household
-              </Button>
-              <Button variant="outline" onClick={signOut}>
-                Sign Out
-              </Button>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-4">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Resident Dashboard</h1>
+            <p className="text-gray-600">Manage your rent payments and household memberships</p>
           </div>
+          <NotificationCenter />
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Quick Stats */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-green-600" />
-                </div>
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Households</p>
-                  <p className="text-2xl font-bold text-gray-900">{households.length}</p>
+                  <p className="text-sm text-gray-600 mb-1">Total Monthly Rent</p>
+                  <p className="text-2xl font-bold text-gray-900">${totalRent.toLocaleString()}</p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Amount Owed</p>
-                  <p className="text-2xl font-bold text-gray-900">${totalOwed.toFixed(2)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-blue-600" />
+                  <DollarSign className="w-6 h-6 text-blue-600" />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Recent Payments</p>
-                  <p className="text-2xl font-bold text-gray-900">{payments.length}</p>
+                  <p className="text-sm text-gray-600 mb-1">Next Due Date</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {nextDueDate ? nextDueDate.toLocaleDateString() : 'N/A'}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Pending Payments</p>
+                  <p className="text-2xl font-bold text-gray-900">{pendingPayments}</p>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Bell className="w-6 h-6 text-purple-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* My Households */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>My Households</CardTitle>
-            <CardDescription>Households you're a member of</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {households.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No households yet</h3>
-                <p className="text-gray-600 mb-6">Join a household to start tracking your rent payments</p>
-                <Button onClick={() => navigate('/join/new')}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Join Household
-                </Button>
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 gap-4">
-                {households.map((household) => (
-                  <Card key={household.id} className="cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => navigate(`/household/${household.id}`)}>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-lg mb-2">{household.name}</h3>
-                      <div className="space-y-1 text-sm text-gray-600">
-                        <p>Total Rent: ${household.rent_amount.toLocaleString()}</p>
-                        <p>Due: {household.due_day}th of each month</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Join Household Form */}
+          {memberData.length === 0 ? (
+            <div className="lg:col-span-2">
+              <JoinHouseholdForm />
+            </div>
+          ) : (
+            <JoinHouseholdForm />
+          )}
+
+          {/* Households */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Home className="w-5 h-5" />
+                My Households
+              </CardTitle>
+              <CardDescription>
+                Households you're a member of
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {memberData.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-2">No households yet</p>
+                  <p className="text-sm text-gray-500">Use the form above to join a household</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {memberData.map((member) => (
+                    <div 
+                      key={member.id}
+                      className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => navigate(`/household/${member.household_id}`)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{member.household.name}</h3>
+                          <p className="text-sm text-gray-600">
+                            Rent: ${member.household.rent_amount.toLocaleString()} • Due: {member.household.due_day}th
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            {member.role}
+                          </span>
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Recent Payments */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment History</CardTitle>
-            <CardDescription>Your recent rent payments</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {payments.length === 0 ? (
-              <div className="text-center py-8">
-                <DollarSign className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No payments yet</h3>
-                <p className="text-gray-600">Your payment history will appear here</p>
+        {payments.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Payments</CardTitle>
+              <CardDescription>Your latest rent payment activity</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {payments.map((payment) => (
+                  <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">{payment.bill.household.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {payment.bill.month_year} • Due: {new Date(payment.bill.due_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-900">${Number(payment.amount).toLocaleString()}</p>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        payment.status === 'paid' 
+                          ? 'bg-green-100 text-green-800' 
+                          : payment.status === 'verified'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {payment.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Month</TableHead>
-                    <TableHead>Household</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payments.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell>{payment.bill.month_year}</TableCell>
-                      <TableCell>{payment.bill.household.name}</TableCell>
-                      <TableCell>${payment.amount.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          {payment.status === 'paid' ? (
-                            <Check className="w-4 h-4 text-green-600" />
-                          ) : (
-                            <Clock className="w-4 h-4 text-orange-600" />
-                          )}
-                          <span className="capitalize">{payment.status}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {payment.status === 'pending' && (
-                          <Button
-                            size="sm"
-                            onClick={() => markPaymentPaid(payment.id)}
-                          >
-                            Mark Paid
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
