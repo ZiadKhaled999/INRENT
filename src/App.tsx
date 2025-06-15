@@ -29,7 +29,6 @@ const App: React.FC = () => {
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            {/* Add route for invitation links with ?token=... */}
             <Route path="/join" element={<JoinHousehold />} />
             <Route path="/join/:id" element={<JoinHousehold />} />
             <Route path="/role-selection" element={
@@ -52,7 +51,6 @@ const App: React.FC = () => {
                 <HouseholdDetail />
               </ProtectedRoute>
             } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
