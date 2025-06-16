@@ -213,7 +213,7 @@ const NotificationCenter = () => {
   );
 
   const notificationList = (
-    <>
+    <div className="space-y-3 p-1">
       {loading ? (
         <div className="flex items-center justify-center p-8 text-center">
           <div>
@@ -228,66 +228,64 @@ const NotificationCenter = () => {
           <p className="text-sm text-gray-500">You're all caught up!</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {notifications.map((notification) => (
-            <div
-              key={notification.id}
-              className={`p-3 rounded-lg border text-sm ${
-                notification.read 
-                  ? 'bg-gray-50/50 border-gray-200/80' 
-                  : 'bg-blue-50/50 border-blue-200/80'
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <User className="w-4 h-4 text-gray-500" />
-                    <h4 className="font-semibold">{notification.title}</h4>
-                    {!notification.read && (
-                      <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                    )}
-                  </div>
-                  <p className="text-gray-600 mb-2">{notification.message}</p>
-                  <p className="text-xs text-gray-400">
-                    {new Date(notification.created_at).toLocaleString()}
-                  </p>
+        notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`p-3 rounded-lg border text-sm ${
+              notification.read 
+                ? 'bg-gray-50/50 border-gray-200/80' 
+                : 'bg-blue-50/50 border-blue-200/80'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <User className="w-4 h-4 text-gray-500" />
+                  <h4 className="font-semibold">{notification.title}</h4>
+                  {!notification.read && (
+                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                  )}
                 </div>
+                <p className="text-gray-600 mb-2">{notification.message}</p>
+                <p className="text-xs text-gray-400">
+                  {new Date(notification.created_at).toLocaleString()}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => deleteNotification(notification.id)}
+                className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 ml-2"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {notification.type === 'join_request' && !notification.read && (
+              <div className="flex gap-2 mt-3">
                 <Button
-                  variant="ghost"
                   size="sm"
-                  onClick={() => deleteNotification(notification.id)}
-                  className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 ml-2"
+                  onClick={() => handleJoinRequest(notification.id, 'approve')}
+                  className="bg-green-600 hover:bg-green-700 h-8"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Check className="w-4 h-4 mr-1" />
+                  Approve
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleJoinRequest(notification.id, 'dismiss')}
+                  className="h-8"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Dismiss
                 </Button>
               </div>
-
-              {notification.type === 'join_request' && !notification.read && (
-                <div className="flex gap-2 mt-3">
-                  <Button
-                    size="sm"
-                    onClick={() => handleJoinRequest(notification.id, 'approve')}
-                    className="bg-green-600 hover:bg-green-700 h-8"
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    Approve
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleJoinRequest(notification.id, 'dismiss')}
-                    className="h-8"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Dismiss
-                  </Button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        ))
       )}
-    </>
+    </div>
   );
 
   if (isMobile) {
@@ -299,7 +297,7 @@ const NotificationCenter = () => {
             <DrawerTitle>Notifications</DrawerTitle>
             <DrawerDescription>{unreadNotifications.length > 0 ? `You have ${unreadNotifications.length} unread notifications.` : "You're all caught up."}</DrawerDescription>
           </DrawerHeader>
-          <ScrollArea className="h-[70vh] px-4">
+          <ScrollArea className="h-[70vh] w-full">
             {notificationList}
           </ScrollArea>
         </DrawerContent>
@@ -315,7 +313,7 @@ const NotificationCenter = () => {
             <h4 className="font-medium leading-none">Notifications</h4>
             <p className="text-sm text-muted-foreground">{unreadNotifications.length > 0 ? `You have ${unreadNotifications.length} unread notifications.` : "You're all caught up."}</p>
         </div>
-        <ScrollArea className="max-h-[60vh] px-4">
+        <ScrollArea className="max-h-[60vh] w-full">
             {notificationList}
         </ScrollArea>
       </PopoverContent>
