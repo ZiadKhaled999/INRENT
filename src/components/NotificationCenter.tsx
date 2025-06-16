@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Bell, Check, X, User } from "lucide-react";
+import { Bell, Check, X, User, Trash2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerDescription } from "@/components/ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -53,6 +53,32 @@ const NotificationCenter = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId);
+
+      if (error) throw error;
+
+      // Remove from local state
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      
+      toast({
+        title: "Notification deleted",
+        description: "The notification has been removed.",
+      });
+    } catch (error: any) {
+      console.error('Error deleting notification:', error);
+      toast({
+        title: "Failed to delete notification",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -226,6 +252,14 @@ const NotificationCenter = () => {
                     {new Date(notification.created_at).toLocaleString()}
                   </p>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteNotification(notification.id)}
+                  className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 ml-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
 
               {notification.type === 'join_request' && !notification.read && (
@@ -265,8 +299,8 @@ const NotificationCenter = () => {
             <DrawerTitle>Notifications</DrawerTitle>
             <DrawerDescription>{unreadNotifications.length > 0 ? `You have ${unreadNotifications.length} unread notifications.` : "You're all caught up."}</DrawerDescription>
           </DrawerHeader>
-          <ScrollArea className="h-[70vh]">
-            <div className="p-4 pt-0">{notificationList}</div>
+          <ScrollArea className="h-[70vh] px-4">
+            {notificationList}
           </ScrollArea>
         </DrawerContent>
       </Drawer>
@@ -281,10 +315,8 @@ const NotificationCenter = () => {
             <h4 className="font-medium leading-none">Notifications</h4>
             <p className="text-sm text-muted-foreground">{unreadNotifications.length > 0 ? `You have ${unreadNotifications.length} unread notifications.` : "You're all caught up."}</p>
         </div>
-        <ScrollArea className="max-h-[60vh]">
-            <div className="p-4">
-                {notificationList}
-            </div>
+        <ScrollArea className="max-h-[60vh] px-4">
+            {notificationList}
         </ScrollArea>
       </PopoverContent>
     </Popover>
