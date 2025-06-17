@@ -34,34 +34,51 @@ const NotificationCenter = () => {
     }
   }, [user]);
 
-  // Add real-time subscription for notifications
+  // Real-time subscription for notifications
   useEffect(() => {
     if (!user?.id) return;
 
     const channel = supabase
-      .channel('notifications-changes')
+      .channel('notifications-realtime')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Notification change:', payload);
-          if (payload.eventType === 'DELETE') {
-            // Remove deleted notification from local state
-            setNotifications(prev => prev.filter(n => n.id !== payload.old.id));
-          } else if (payload.eventType === 'INSERT') {
-            // Add new notification to local state
-            setNotifications(prev => [payload.new as Notification, ...prev]);
-          } else if (payload.eventType === 'UPDATE') {
-            // Update notification in local state
-            setNotifications(prev => 
-              prev.map(n => n.id === payload.new.id ? payload.new as Notification : n)
-            );
-          }
+          console.log('New notification received:', payload);
+          setNotifications(prev => [payload.new as Notification, ...prev]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Notification updated:', payload);
+          setNotifications(prev => 
+            prev.map(n => n.id === payload.new.id ? payload.new as Notification : n)
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Notification deleted via realtime:', payload);
+          setNotifications(prev => prev.filter(n => n.id !== payload.old.id));
         }
       )
       .subscribe();
@@ -101,16 +118,15 @@ const NotificationCenter = () => {
         .from('notifications')
         .delete()
         .eq('id', notificationId)
-        .eq('user_id', user?.id); // Extra security check
+        .eq('user_id', user?.id);
 
       if (error) throw error;
 
-      console.log('Notification deleted successfully from database');
+      console.log('Notification deleted successfully');
       
-      // The real-time subscription will handle removing it from local state
       toast({
         title: "Notification deleted",
-        description: "The notification has been permanently removed.",
+        description: "The notification has been removed.",
       });
     } catch (error: any) {
       console.error('Error deleting notification:', error);
@@ -123,7 +139,7 @@ const NotificationCenter = () => {
   };
 
   const handleJoinRequest = async (notificationId: string, action: 'approve' | 'dismiss') => {
-    setOpen(false); // Close on action
+    setOpen(false);
     try {
       const notification = notifications.find(n => n.id === notificationId);
       if (!notification) return;
@@ -200,20 +216,8 @@ const NotificationCenter = () => {
         });
       }
 
-      // DELETE the notification completely from the database after processing
-      console.log('Deleting processed join request notification:', notificationId);
-      const { error: deleteError } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', notificationId)
-        .eq('user_id', user?.id);
-
-      if (deleteError) {
-        console.error('Error deleting processed notification:', deleteError);
-        throw deleteError;
-      }
-
-      console.log('Join request notification deleted successfully from database');
+      // Delete the join request notification after processing
+      await deleteNotification(notificationId);
 
     } catch (error: any) {
       console.error('Error handling join request:', error);
@@ -234,8 +238,6 @@ const NotificationCenter = () => {
         .eq('user_id', user?.id);
 
       if (error) throw error;
-
-      // The real-time subscription will handle updating local state
     } catch (error: any) {
       console.error('Error marking notification as read:', error);
     }
