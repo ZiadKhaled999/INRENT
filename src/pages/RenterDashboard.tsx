@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -166,6 +167,42 @@ const RenterDashboard = () => {
     }
   };
 
+  const sendFailureNotifications = async (householdId: string, householdName: string, reason: string) => {
+    try {
+      // Get all residents in the household
+      const { data: residents, error: residentsError } = await supabase
+        .from('household_members')
+        .select('user_id, display_name')
+        .eq('household_id', householdId)
+        .eq('role', 'resident');
+
+      if (residentsError) throw residentsError;
+
+      if (residents && residents.length > 0) {
+        // Create failure notifications for all residents
+        const notifications = residents.map(resident => ({
+          user_id: resident.user_id,
+          type: 'deletion_failed',
+          title: 'Property Deletion Failed',
+          message: `The renter attempted to delete the property "${householdName}" but failed due to ${reason}. The property remains active.`,
+          read: false
+        }));
+
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .insert(notifications);
+
+        if (notificationError) {
+          console.error('Error creating failure notifications:', notificationError);
+        } else {
+          console.log('Deletion failure notifications sent to residents');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error sending failure notifications:', error);
+    }
+  };
+
   const confirmDelete = async (householdId: string) => {
     setDeleting(true);
     try {
@@ -183,10 +220,8 @@ const RenterDashboard = () => {
         return;
       }
 
-      // If there are residents, send notifications before deletion
+      // If there are residents, check payment conditions first
       if (household.resident_count > 0) {
-        await sendDeletionNotifications(householdId, household.name);
-
         // Check payment conditions
         const { data: bills, error: billsError } = await supabase
           .from('bills')
@@ -198,6 +233,9 @@ const RenterDashboard = () => {
         const hasPending = bills && bills.some((bill) => (bill.status || '').toLowerCase() === 'pending');
 
         if (hasPending) {
+          // Send failure notification to residents
+          await sendFailureNotifications(householdId, household.name, 'active or unpaid rent');
+          
           toast({
             title: "Cannot delete property",
             description: "There is an active or unpaid rent month. Please make sure all rent is paid before deleting this property.",
@@ -220,6 +258,9 @@ const RenterDashboard = () => {
 
           const unpaidSplits = allSplits?.some(split => split.status !== 'paid');
           if (unpaidSplits) {
+            // Send failure notification to residents
+            await sendFailureNotifications(householdId, household.name, 'unpaid rent splits');
+            
             toast({
               title: "Cannot delete property",
               description: "Not all residents have paid their rent. Please wait until all splits are paid.",
@@ -232,8 +273,8 @@ const RenterDashboard = () => {
         }
       }
 
-      // If all conditions are met, proceed with deletion
-      await deleteHousehold(householdId);
+      // If all conditions are met, proceed with deletion and send success notifications
+      await deleteHousehold(householdId, household.name);
 
     } catch (error: any) {
       toast({
@@ -246,7 +287,7 @@ const RenterDashboard = () => {
     }
   };
 
-  const deleteHousehold = async (householdId: string) => {
+  const deleteHousehold = async (householdId: string, householdName: string) => {
     try {
       console.log('Starting deletion process for household:', householdId);
       
@@ -299,7 +340,11 @@ const RenterDashboard = () => {
       }
       console.log('Household invitations deleted successfully');
       
-      // 4. Delete household members
+      // 4. Send deletion notifications BEFORE deleting members (so we can still get the residents list)
+      console.log('Sending deletion notifications...');
+      await sendDeletionNotifications(householdId, householdName);
+      
+      // 5. Delete household members
       console.log('Deleting household members...');
       const { error: membersError } = await supabase
         .from('household_members')
@@ -312,7 +357,7 @@ const RenterDashboard = () => {
       }
       console.log('Household members deleted successfully');
       
-      // 5. Finally, delete the household itself
+      // 6. Finally, delete the household itself
       console.log('Deleting household...');
       const { error: deleteError } = await supabase
         .from('households')
@@ -528,7 +573,7 @@ const RenterDashboard = () => {
                                       <>
                                         This property has <span className="font-bold">{household.resident_count} resident(s)</span>. 
                                         Deleting it will permanently remove all data including resident information, payment history, and bills.<br /><br />
-                                        <span className="text-orange-600 font-medium">All residents will be notified about this deletion.</span><br /><br />
+                                        <span className="text-orange-600 font-medium">All residents will be notified only if the deletion succeeds.</span><br /><br />
                                         Are you sure you want to permanently delete <span className="font-bold">{household.name}</span>?
                                       </>
                                     )}
