@@ -8,7 +8,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
-import PhoneVerification from "@/components/PhoneVerification";
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -16,7 +15,6 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<'register' | 'phone-verification'>('register');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -65,11 +63,11 @@ const Register = () => {
 
       if (data.user) {
         toast({
-          title: "Account created successfully!",
-          description: "Please verify your phone number to enhance security.",
+          title: "Welcome to Rentable!",
+          description: "Your account has been created successfully.",
         });
         
-        setStep('phone-verification');
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -82,56 +80,6 @@ const Register = () => {
       setLoading(false);
     }
   };
-
-  const handlePhoneVerificationComplete = () => {
-    toast({
-      title: "Welcome to Rentable!",
-      description: "Your account has been created and phone number verified.",
-    });
-    navigate('/dashboard');
-  };
-
-  const handleSkipVerification = () => {
-    navigate('/dashboard');
-  };
-
-  if (step === 'phone-verification') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-4">
-              <AppLogoWithBg size={60} />
-              <span className="text-2xl font-bold text-gray-900 mt-1">Rentable</span>
-            </Link>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Secure Your Account</h1>
-            <p className="text-sm sm:text-base text-gray-600">Verify your phone number for enhanced security</p>
-          </div>
-
-          <PhoneVerification 
-            onVerificationComplete={handlePhoneVerificationComplete}
-            isRequired={false}
-          />
-
-          <div className="text-center mt-6">
-            <Button 
-              variant="ghost" 
-              onClick={handleSkipVerification}
-              className="text-sm text-gray-600 hover:text-gray-800 touch-manipulation"
-            >
-              Skip for now
-            </Button>
-          </div>
-
-          <div className="text-center mt-6 text-xs sm:text-sm text-gray-500">
-            <p>Phone verification helps prevent unauthorized access</p>
-            <p>and ensures the security of your rental data.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">

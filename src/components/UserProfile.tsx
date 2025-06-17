@@ -3,17 +3,14 @@ import React from 'react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Shield, ShieldCheck, Phone } from "lucide-react";
 
 interface UserProfileProps {
   userProfile?: any;
   className?: string;
-  onVerifyPhone?: () => void;
 }
 
-const UserProfile = ({ userProfile, className = "", onVerifyPhone }: UserProfileProps) => {
+const UserProfile = ({ userProfile, className = "" }: UserProfileProps) => {
   const { user } = useAuth();
 
   // Generate initials from full name
@@ -53,19 +50,8 @@ const UserProfile = ({ userProfile, className = "", onVerifyPhone }: UserProfile
   const fullName = userProfile?.full_name || user?.user_metadata?.full_name || 'Unknown User';
   const email = userProfile?.email || user?.email || '';
   const userType = userProfile?.user_type || 'Not Set';
-  const phoneNumber = userProfile?.phone_number;
-  const phoneVerified = userProfile?.phone_verified || false;
   const initials = getInitials(fullName);
   const gradientClass = getGradientClass(initials);
-
-  const formatPhoneNumber = (phone: string) => {
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length === 11 && cleaned.startsWith('1')) {
-      const number = cleaned.slice(1);
-      return `(${number.slice(0, 3)}) ${number.slice(3, 6)}-${number.slice(6)}`;
-    }
-    return phone;
-  };
 
   return (
     <Card className={`w-full max-w-md mx-auto ${className}`}>
@@ -103,48 +89,6 @@ const UserProfile = ({ userProfile, className = "", onVerifyPhone }: UserProfile
             <div className="flex justify-between items-center text-xs sm:text-sm">
               <span className="text-gray-600">Email:</span>
               <span className="font-medium text-gray-900 truncate ml-2 max-w-[150px] sm:max-w-[200px]">{email}</span>
-            </div>
-
-            {/* Phone Verification Section */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs sm:text-sm">
-                <span className="text-gray-600">Phone:</span>
-                <div className="flex items-center gap-2">
-                  {phoneNumber ? (
-                    <>
-                      <span className="font-medium text-gray-900 text-xs sm:text-sm">
-                        {formatPhoneNumber(phoneNumber)}
-                      </span>
-                      {phoneVerified ? (
-                        <ShieldCheck className="w-4 h-4 text-green-500" />
-                      ) : (
-                        <Shield className="w-4 h-4 text-gray-400" />
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-gray-400 text-xs sm:text-sm">Not provided</span>
-                  )}
-                </div>
-              </div>
-
-              {(!phoneNumber || !phoneVerified) && onVerifyPhone && (
-                <Button
-                  onClick={onVerifyPhone}
-                  variant="outline"
-                  size="sm"
-                  className="w-full h-9 text-xs sm:text-sm touch-manipulation"
-                >
-                  <Phone className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                  {phoneNumber ? 'Verify Phone' : 'Add Phone Number'}
-                </Button>
-              )}
-
-              {phoneVerified && (
-                <div className="flex items-center justify-center gap-2 text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                  <ShieldCheck className="w-3 h-3" />
-                  <span>Phone Verified</span>
-                </div>
-              )}
             </div>
             
             {userProfile?.created_at && (
