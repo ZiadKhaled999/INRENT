@@ -11,10 +11,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 
 interface DashboardHeaderProps {
     userProfile?: any;
-    onVerifyPhone?: () => void;
 }
 
-const DashboardHeader = ({ userProfile, onVerifyPhone }: DashboardHeaderProps) => {
+const DashboardHeader = ({ userProfile }: DashboardHeaderProps) => {
     const isMobile = useIsMobile();
 
     const profileTrigger = (
@@ -38,7 +37,7 @@ const DashboardHeader = ({ userProfile, onVerifyPhone }: DashboardHeaderProps) =
                             <DrawerTitle>Your Profile</DrawerTitle>
                         </DrawerHeader>
                         <div className="p-4">
-                            <UserProfile userProfile={userProfile} onVerifyPhone={onVerifyPhone} />
+                            <UserProfile userProfile={userProfile} />
                         </div>
                     </DrawerContent>
                 </Drawer>
@@ -49,7 +48,7 @@ const DashboardHeader = ({ userProfile, onVerifyPhone }: DashboardHeaderProps) =
             <Popover>
                 <PopoverTrigger asChild>{profileTrigger}</PopoverTrigger>
                 <PopoverContent className="w-full max-w-md p-0" align="end">
-                    <UserProfile userProfile={userProfile} onVerifyPhone={onVerifyPhone} className="border-0 shadow-none" />
+                    <UserProfile userProfile={userProfile} className="border-0 shadow-none" />
                 </PopoverContent>
             </Popover>
         );
@@ -74,4 +73,3 @@ const DashboardHeader = ({ userProfile, onVerifyPhone }: DashboardHeaderProps) =
 };
 
 export default DashboardHeader;
-

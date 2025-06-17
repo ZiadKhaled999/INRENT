@@ -19,8 +19,6 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import RenterDashboardHeader from '@/components/renter/DashboardHeader';
-import PhoneVerification from '@/components/PhoneVerification';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface Household {
   id: string;
@@ -40,7 +38,6 @@ const RenterDashboard = () => {
   const navigate = useNavigate();
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user?.id) {
@@ -125,15 +122,6 @@ const RenterDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleProfileUpdate = () => {
-    fetchUserProfile();
-    setShowPhoneVerification(false);
-    toast({
-        title: "Profile updated!",
-        description: "Your phone number information has been refreshed.",
-    });
   };
 
   const totalRentCollected = households.reduce((sum, h) => sum + Number(h.rent_amount), 0);
@@ -395,7 +383,7 @@ const RenterDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <RenterDashboardHeader userProfile={userProfile} onVerifyPhone={() => setShowPhoneVerification(true)} />
+      <RenterDashboardHeader userProfile={userProfile} />
 
       <div className="container mx-auto px-4 py-8">
         {/* Quick Stats */}
@@ -574,13 +562,6 @@ const RenterDashboard = () => {
           </CardContent>
         </Card>
       </div>
-      <Dialog open={showPhoneVerification} onOpenChange={setShowPhoneVerification}>
-        <DialogContent>
-            <PhoneVerification
-                onVerificationComplete={handleProfileUpdate}
-            />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

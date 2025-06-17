@@ -13,10 +13,9 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface RenterDashboardHeaderProps {
     userProfile?: any;
-    onVerifyPhone?: () => void;
 }
 
-const RenterDashboardHeader = ({ userProfile, onVerifyPhone }: RenterDashboardHeaderProps) => {
+const RenterDashboardHeader = ({ userProfile }: RenterDashboardHeaderProps) => {
     const isMobile = useIsMobile();
     const navigate = useNavigate();
     const { signOut } = useAuth();
@@ -42,7 +41,7 @@ const RenterDashboardHeader = ({ userProfile, onVerifyPhone }: RenterDashboardHe
                             <DrawerTitle>Your Profile</DrawerTitle>
                         </DrawerHeader>
                         <div className="p-4">
-                            <UserProfile userProfile={userProfile} onVerifyPhone={onVerifyPhone} />
+                            <UserProfile userProfile={userProfile} />
                         </div>
                     </DrawerContent>
                 </Drawer>
@@ -53,7 +52,7 @@ const RenterDashboardHeader = ({ userProfile, onVerifyPhone }: RenterDashboardHe
             <Popover>
                 <PopoverTrigger asChild>{profileTrigger}</PopoverTrigger>
                 <PopoverContent className="w-full max-w-md p-0" align="end">
-                    <UserProfile userProfile={userProfile} onVerifyPhone={onVerifyPhone} className="border-0 shadow-none" />
+                    <UserProfile userProfile={userProfile} className="border-0 shadow-none" />
                 </PopoverContent>
             </Popover>
         );

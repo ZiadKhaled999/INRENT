@@ -11,7 +11,6 @@ import HouseholdsList from "@/components/resident/HouseholdsList";
 import RecentPayments from "@/components/resident/RecentPayments";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import PhoneVerification from '@/components/PhoneVerification';
 
 interface HouseholdMember {
   id: string;
@@ -48,7 +47,6 @@ const ResidentDashboard = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -269,15 +267,6 @@ const ResidentDashboard = () => {
   const totalRent = getTotalRent();
   const pendingPayments = getPendingPayments();
   
-  const handleProfileUpdate = () => {
-    fetchUserProfile();
-    setShowPhoneVerification(false);
-    toast({
-        title: "Profile updated!",
-        description: "Your phone number information has been refreshed.",
-    });
-  };
-
   const handleJoinSuccess = () => {
     fetchResidentData();
     setIsJoinDialogOpen(false);
@@ -286,7 +275,7 @@ const ResidentDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-2 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        <DashboardHeader userProfile={userProfile} onVerifyPhone={() => setShowPhoneVerification(true)} />
+        <DashboardHeader userProfile={userProfile} />
 
         <StatsCards 
           totalRent={totalRent}
@@ -320,14 +309,6 @@ const ResidentDashboard = () => {
           </div>
         )}
       </div>
-
-      <Dialog open={showPhoneVerification} onOpenChange={setShowPhoneVerification}>
-        <DialogContent>
-            <PhoneVerification
-                onVerificationComplete={handleProfileUpdate}
-            />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
