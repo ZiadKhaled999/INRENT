@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -112,7 +111,10 @@ const NotificationCenter = () => {
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      console.log('Deleting notification:', notificationId);
+      console.log('Starting deletion process for notification:', notificationId);
+      
+      // Optimistically remove from UI first
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
       
       const { error } = await supabase
         .from('notifications')
@@ -120,9 +122,14 @@ const NotificationCenter = () => {
         .eq('id', notificationId)
         .eq('user_id', user?.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database deletion failed:', error);
+        // Revert optimistic update on error
+        await fetchNotifications();
+        throw error;
+      }
 
-      console.log('Notification deleted successfully');
+      console.log('Notification deleted successfully from database');
       
       toast({
         title: "Notification deleted",
