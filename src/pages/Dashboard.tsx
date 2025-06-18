@@ -4,14 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { LogOut } from "lucide-react";
 import RenterDashboard from './RenterDashboard';
 import ResidentDashboard from './ResidentDashboard';
 import EmailVerificationNotice from '@/components/EmailVerificationNotice';
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Dashboard = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -48,6 +48,11 @@ const Dashboard = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -64,15 +69,16 @@ const Dashboard = () => {
     return (
       <div>
         <EmailVerificationNotice />
-        {/* Settings Button */}
+        {/* Sign Out Button */}
         <div className="fixed bottom-4 right-4 z-50">
           <Button
-            onClick={() => navigate('/settings')}
+            onClick={handleSignOut}
+            variant="destructive"
             className="rounded-full shadow-lg hover:shadow-xl transition-shadow"
             size="lg"
           >
-            <Settings className="h-5 w-5 mr-2" />
-            {t('settings')}
+            <LogOut className="h-5 w-5 mr-2" />
+            Sign Out
           </Button>
         </div>
         <RenterDashboard />
@@ -82,15 +88,16 @@ const Dashboard = () => {
     return (
       <div>
         <EmailVerificationNotice />
-        {/* Settings Button */}
+        {/* Sign Out Button */}
         <div className="fixed bottom-4 right-4 z-50">
           <Button
-            onClick={() => navigate('/settings')}
+            onClick={handleSignOut}
+            variant="destructive"
             className="rounded-full shadow-lg hover:shadow-xl transition-shadow"
             size="lg"
           >
-            <Settings className="h-5 w-5 mr-2" />
-            {t('settings')}
+            <LogOut className="h-5 w-5 mr-2" />
+            Sign Out
           </Button>
         </div>
         <ResidentDashboard />

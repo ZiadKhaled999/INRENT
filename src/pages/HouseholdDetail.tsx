@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, DollarSign, Users, ArrowLeft, Plus, UserMinus } from "lucide-react";
+import { Home, DollarSign, Users, ArrowLeft, Plus, UserMinus, CheckCircle, Clock } from "lucide-react";
 import InviteResidentModal from "@/components/InviteResidentModal";
 import LeaveHouseholdModal from "@/components/LeaveHouseholdModal";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
@@ -218,6 +218,62 @@ const HouseholdDetail = () => {
     }
   };
 
+  const markPaymentAsPaid = async (billSplitId: string) => {
+    try {
+      const { error } = await supabase
+        .from('bill_splits')
+        .update({ 
+          status: 'paid',
+          paid_at: new Date().toISOString()
+        })
+        .eq('id', billSplitId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Payment marked as paid",
+        description: "Your rent payment has been marked as paid.",
+      });
+
+      await fetchHouseholdData();
+    } catch (error: any) {
+      console.error('Error marking payment as paid:', error);
+      toast({
+        title: "Failed to mark payment",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const markPaymentAsPending = async (billSplitId: string) => {
+    try {
+      const { error } = await supabase
+        .from('bill_splits')
+        .update({ 
+          status: 'pending',
+          paid_at: null
+        })
+        .eq('id', billSplitId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Payment marked as pending",
+        description: "Your rent payment has been marked as pending.",
+      });
+
+      await fetchHouseholdData();
+    } catch (error: any) {
+      console.error('Error marking payment as pending:', error);
+      toast({
+        title: "Failed to mark payment",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const getUserRole = () => {
     if (!user) return null;
     const member = members.find(m => m.user_id === user.id);
@@ -421,6 +477,8 @@ const HouseholdDetail = () => {
                             <h4 className="text-sm font-medium text-gray-700">Payment Splits:</h4>
                             {bill.bill_splits.map((split) => {
                               const member = members.find(m => m.user_id === split.user_id);
+                              const isCurrentUserSplit = split.user_id === user?.id;
+                              
                               return (
                                 <div key={split.id} className="flex items-center justify-between text-sm">
                                   <span>{member?.display_name || 'Unknown'}</span>
@@ -433,6 +491,33 @@ const HouseholdDetail = () => {
                                     }`}>
                                       {split.status}
                                     </span>
+                                    
+                                    {/* Payment buttons for current user's splits */}
+                                    {isCurrentUserSplit && userRole === 'resident' && (
+                                      <div className="flex gap-1">
+                                        {split.status === 'pending' ? (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => markPaymentAsPaid(split.id)}
+                                            className="h-6 px-2 text-xs"
+                                          >
+                                            <CheckCircle className="w-3 h-3 mr-1" />
+                                            Mark Paid
+                                          </Button>
+                                        ) : (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => markPaymentAsPending(split.id)}
+                                            className="h-6 px-2 text-xs"
+                                          >
+                                            <Clock className="w-3 h-3 mr-1" />
+                                            Mark Pending
+                                          </Button>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               );

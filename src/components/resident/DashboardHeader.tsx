@@ -1,13 +1,15 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { User } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import NotificationCenter from "@/components/NotificationCenter";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
 import UserProfile from '@/components/UserProfile';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardHeaderProps {
     userProfile?: any;
@@ -15,6 +17,13 @@ interface DashboardHeaderProps {
 
 const DashboardHeader = ({ userProfile }: DashboardHeaderProps) => {
     const isMobile = useIsMobile();
+    const { signOut } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSignOut = async () => {
+        await signOut();
+        navigate('/');
+    };
 
     const profileTrigger = (
         <Button 
@@ -67,6 +76,15 @@ const DashboardHeader = ({ userProfile }: DashboardHeaderProps) => {
           <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-end">
             <ProfileDisplay />
             <NotificationCenter />
+            <Button
+              onClick={handleSignOut}
+              variant="destructive"
+              size="sm"
+              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4"
+            >
+              <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Sign Out</span>
+            </Button>
           </div>
         </div>
     );
