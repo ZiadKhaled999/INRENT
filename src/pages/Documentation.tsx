@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, ArrowLeft, Home, Users, DollarSign, Calendar, Shield, CheckCircle, UserPlus, Bell, CreditCard, Settings, Check, Clock, AlertCircle, Mail, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
+import Footer from '@/components/Footer';
 
 const Documentation = () => {
   const navigate = useNavigate();
@@ -666,6 +666,8 @@ const Documentation = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Footer />
     </div>
   );
 };

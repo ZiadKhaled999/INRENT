@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
 import RenterDashboard from './RenterDashboard';
 import ResidentDashboard from './ResidentDashboard';
 import EmailVerificationNotice from '@/components/EmailVerificationNotice';
@@ -48,11 +46,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -69,18 +62,6 @@ const Dashboard = () => {
     return (
       <div>
         <EmailVerificationNotice />
-        {/* Sign Out Button */}
-        <div className="fixed bottom-4 right-4 z-50">
-          <Button
-            onClick={handleSignOut}
-            variant="destructive"
-            className="rounded-full shadow-lg hover:shadow-xl transition-shadow"
-            size="lg"
-          >
-            <LogOut className="h-5 w-5 mr-2" />
-            Sign Out
-          </Button>
-        </div>
         <RenterDashboard />
       </div>
     );
@@ -88,18 +69,6 @@ const Dashboard = () => {
     return (
       <div>
         <EmailVerificationNotice />
-        {/* Sign Out Button */}
-        <div className="fixed bottom-4 right-4 z-50">
-          <Button
-            onClick={handleSignOut}
-            variant="destructive"
-            className="rounded-full shadow-lg hover:shadow-xl transition-shadow"
-            size="lg"
-          >
-            <LogOut className="h-5 w-5 mr-2" />
-            Sign Out
-          </Button>
-        </div>
         <ResidentDashboard />
       </div>
     );
