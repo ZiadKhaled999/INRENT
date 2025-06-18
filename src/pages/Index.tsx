@@ -66,35 +66,95 @@ const Index = () => {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 relative overflow-hidden">
-        {/* Animated Water Wave Background */}
+        {/* Enhanced Money Flow Animation Background */}
         <div className="absolute inset-0 overflow-hidden">
-          <svg className="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+          <svg className="absolute inset-0 w-full h-full opacity-15" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
             <defs>
-              <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
-                <stop offset="50%" stopColor="#ffffff" stopOpacity="0.1" />
-                <stop offset="100%" stopColor="#059669" stopOpacity="0.2" />
+              <linearGradient id="moneyFlow1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#10b981" stopOpacity="0.6" />
+                <stop offset="25%" stopColor="#ffffff" stopOpacity="0.2" />
+                <stop offset="50%" stopColor="#059669" stopOpacity="0.8" />
+                <stop offset="75%" stopColor="#34d399" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#10b981" stopOpacity="0.6" />
               </linearGradient>
-              <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.2" />
-                <stop offset="50%" stopColor="#34d399" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1" />
+              <linearGradient id="moneyFlow2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#34d399" stopOpacity="0.5" />
+                <stop offset="33%" stopColor="#10b981" stopOpacity="0.7" />
+                <stop offset="66%" stopColor="#ffffff" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#059669" stopOpacity="0.5" />
               </linearGradient>
             </defs>
+            
+            {/* Money Transfer Lines - Horizontal Flow */}
             <path
-              d="M0,400 C300,350 600,450 900,400 C1050,375 1150,425 1200,400 L1200,800 L0,800 Z"
-              fill="url(#waveGradient1)"
-              className="animate-[wave1_6s_ease-in-out_infinite]"
+              d="M0,200 Q300,150 600,200 Q900,250 1200,200"
+              stroke="url(#moneyFlow1)"
+              strokeWidth="4"
+              fill="none"
+              className="animate-[moneyFlow1_2s_ease-in-out_infinite]"
+              strokeDasharray="30,20"
             />
             <path
-              d="M0,450 C400,400 800,500 1200,450 L1200,800 L0,800 Z"
-              fill="url(#waveGradient2)"
-              className="animate-[wave2_8s_ease-in-out_infinite_reverse]"
+              d="M0,250 Q400,200 800,250 Q1000,300 1200,250"
+              stroke="url(#moneyFlow2)"
+              strokeWidth="3"
+              fill="none"
+              className="animate-[moneyFlow2_2.5s_ease-in-out_infinite_reverse]"
+              strokeDasharray="25,15"
+            />
+            
+            {/* Rent Split Visualization Lines */}
+            <path
+              d="M0,350 C200,320 400,380 600,350 C800,320 1000,380 1200,350"
+              stroke="url(#moneyFlow1)"
+              strokeWidth="3"
+              fill="none"
+              className="animate-[rentSplit1_1.8s_ease-in-out_infinite]"
+              strokeDasharray="20,10"
             />
             <path
-              d="M0,500 C200,480 400,520 600,500 C800,480 1000,520 1200,500 L1200,800 L0,800 Z"
-              fill="url(#waveGradient1)"
-              className="animate-[wave3_7s_ease-in-out_infinite]"
+              d="M0,400 Q150,370 300,400 Q450,430 600,400 Q750,370 900,400 Q1050,430 1200,400"
+              stroke="url(#moneyFlow2)"
+              strokeWidth="2"
+              fill="none"
+              className="animate-[rentSplit2_2.2s_ease-in-out_infinite_reverse]"
+              strokeDasharray="15,8"
+            />
+            
+            {/* Payment Tracking Lines */}
+            <path
+              d="M0,500 Q300,450 600,500 Q900,550 1200,500"
+              stroke="url(#moneyFlow1)"
+              strokeWidth="3"
+              fill="none"
+              className="animate-[paymentTrack1_1.5s_ease-in-out_infinite]"
+              strokeDasharray="18,12"
+            />
+            <path
+              d="M0,550 C400,500 800,600 1200,550"
+              stroke="url(#moneyFlow2)"
+              strokeWidth="2"
+              fill="none"
+              className="animate-[paymentTrack2_2.8s_ease-in-out_infinite_reverse]"
+              strokeDasharray="22,14"
+            />
+            
+            {/* Additional Money Flow Lines */}
+            <path
+              d="M0,300 Q250,280 500,300 Q750,320 1000,300 Q1100,290 1200,300"
+              stroke="url(#moneyFlow1)"
+              strokeWidth="2"
+              fill="none"
+              className="animate-[additionalFlow1_1.3s_ease-in-out_infinite]"
+              strokeDasharray="12,6"
+            />
+            <path
+              d="M0,450 Q350,425 700,450 Q950,475 1200,450"
+              stroke="url(#moneyFlow2)"
+              strokeWidth="3"
+              fill="none"
+              className="animate-[additionalFlow2_2.1s_ease-in-out_infinite_reverse]"
+              strokeDasharray="28,18"
             />
           </svg>
         </div>
@@ -194,7 +254,7 @@ const Index = () => {
           </nav>
         </header>
 
-        {/* Hero Section with Flowing Animation */}
+        {/* Hero Section with Enhanced Animation */}
         <section className="relative pt-32 pb-20 px-6">
           <div className="container mx-auto text-center">
             <div className="max-w-5xl mx-auto">
@@ -506,40 +566,59 @@ const Index = () => {
             }
           }
 
-          @keyframes wave1 {
-            0%, 100% { transform: translateX(0) scaleY(1); }
-            25% { transform: translateX(-25px) scaleY(1.1); }
-            50% { transform: translateX(0) scaleY(0.9); }
-            75% { transform: translateX(25px) scaleY(1.1); }
+          @keyframes moneyFlow1 {
+            0%, 100% { stroke-dashoffset: 0; }
+            50% { stroke-dashoffset: 50; }
           }
 
-          @keyframes wave2 {
-            0%, 100% { transform: translateX(0) scaleY(1); }
-            33% { transform: translateX(30px) scaleY(1.2); }
-            66% { transform: translateX(-20px) scaleY(0.8); }
+          @keyframes moneyFlow2 {
+            0%, 100% { stroke-dashoffset: 0; }
+            50% { stroke-dashoffset: -40; }
           }
 
-          @keyframes wave3 {
-            0%, 100% { transform: translateX(0) scaleY(1); }
-            20% { transform: translateX(-15px) scaleY(1.15); }
-            40% { transform: translateX(20px) scaleY(0.85); }
-            60% { transform: translateX(-10px) scaleY(1.05); }
-            80% { transform: translateX(15px) scaleY(0.95); }
+          @keyframes rentSplit1 {
+            0%, 100% { stroke-dashoffset: 0; }
+            50% { stroke-dashoffset: 30; }
           }
 
-          @keyframes smoothWave1 {
+          @keyframes rentSplit2 {
+            0%, 100% { stroke-dashoffset: 0; }
+            50% { stroke-dashoffset: -23; }
+          }
+
+          @keyframes paymentTrack1 {
+            0%, 100% { stroke-dashoffset: 0; }
+            50% { stroke-dashoffset: 30; }
+          }
+
+          @keyframes paymentTrack2 {
+            0%, 100% { stroke-dashoffset: 0; }
+            50% { stroke-dashoffset: -36; }
+          }
+
+          @keyframes additionalFlow1 {
+            0%, 100% { stroke-dashoffset: 0; }
+            50% { stroke-dashoffset: 18; }
+          }
+
+          @keyframes additionalFlow2 {
+            0%, 100% { stroke-dashoffset: 0; }
+            50% { stroke-dashoffset: -46; }
+          }
+
+          @keyframes fastWave1 {
             0% { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: 35; }
+            100% { stroke-dashoffset: 45; }
           }
 
-          @keyframes smoothWave2 {
+          @keyframes fastWave2 {
             0% { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: -25; }
+            100% { stroke-dashoffset: -35; }
           }
 
-          @keyframes smoothWave3 {
+          @keyframes fastWave3 {
             0% { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: 20; }
+            100% { stroke-dashoffset: 25; }
           }
 
           @keyframes connectionFlow {
