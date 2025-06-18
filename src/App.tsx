@@ -14,6 +14,7 @@ import CreateHousehold from "./pages/CreateHousehold";
 import HouseholdDetail from "./pages/HouseholdDetail";
 import JoinHousehold from "./pages/JoinHousehold";
 import Documentation from "./pages/Documentation";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -29,6 +30,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/documentation" element={<Documentation />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/join" element={<JoinHousehold />} />
