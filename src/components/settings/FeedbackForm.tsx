@@ -6,13 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Star } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const FeedbackForm = () => {
+interface FeedbackFormProps {
+  onSuccess?: () => void;
+}
+
+const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
   const [feedbackType, setFeedbackType] = useState('');
   const [feedback, setFeedback] = useState('');
   const [rating, setRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,11 +34,26 @@ const FeedbackForm = () => {
 
     setIsSubmitting(true);
     
-    // Simulate API call
+    // Create mailto link
+    const subject = `Feedback: ${feedbackType}`;
+    const body = `Feedback Type: ${feedbackType}
+Rating: ${rating}/5 stars
+    
+Feedback:
+${feedback}
+
+---
+Sent from Settings Page`;
+    
+    const mailtoLink = `mailto:albhyrytwamrwhy@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    // Open email client
+    window.location.href = mailtoLink;
+    
     setTimeout(() => {
       toast({
-        title: "Feedback sent! 🎉",
-        description: "Thanks for helping us improve. We'll get back to you if needed!"
+        title: t('feedbackSent'),
+        description: t('thanksFeedback')
       });
       
       // Reset form
@@ -40,24 +61,18 @@ const FeedbackForm = () => {
       setFeedback('');
       setRating(0);
       setIsSubmitting(false);
+      onSuccess?.();
     }, 1000);
   };
 
   return (
     <div className="space-y-4">
-      <div>
-        <h3 className="text-base font-medium mb-2">Share Your Feedback</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Tell us what you love or what drives you crazy—we're all ears! 👂
-        </p>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="feedback-type">Feedback Type *</Label>
+          <Label htmlFor="feedback-type">{t('feedbackType')} *</Label>
           <Select value={feedbackType} onValueChange={setFeedbackType}>
             <SelectTrigger className="mt-2">
-              <SelectValue placeholder="What's on your mind?" />
+              <SelectValue placeholder={t('whatsOnMind')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="praise">🎉 Praise & Love</SelectItem>
@@ -92,7 +107,7 @@ const FeedbackForm = () => {
         </div>
 
         <div>
-          <Label htmlFor="feedback">Your Feedback *</Label>
+          <Label htmlFor="feedback">{t('yourFeedback')} *</Label>
           <Textarea
             id="feedback"
             value={feedback}
@@ -109,9 +124,9 @@ const FeedbackForm = () => {
         <Button 
           type="submit" 
           disabled={isSubmitting}
-          className="w-full sm:w-auto"
+          className="w-full"
         >
-          {isSubmitting ? "Sending..." : "Send Feedback 🚀"}
+          {isSubmitting ? "Sending..." : t('sendFeedback')}
         </Button>
       </form>
     </div>

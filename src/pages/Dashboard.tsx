@@ -3,15 +3,19 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
 import RenterDashboard from './RenterDashboard';
 import ResidentDashboard from './ResidentDashboard';
 import EmailVerificationNotice from '@/components/EmailVerificationNotice';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (user && !authLoading) {
@@ -60,6 +64,17 @@ const Dashboard = () => {
     return (
       <div>
         <EmailVerificationNotice />
+        {/* Settings Button */}
+        <div className="fixed bottom-4 right-4 z-50">
+          <Button
+            onClick={() => navigate('/settings')}
+            className="rounded-full shadow-lg hover:shadow-xl transition-shadow"
+            size="lg"
+          >
+            <Settings className="h-5 w-5 mr-2" />
+            {t('settings')}
+          </Button>
+        </div>
         <RenterDashboard />
       </div>
     );
@@ -67,6 +82,17 @@ const Dashboard = () => {
     return (
       <div>
         <EmailVerificationNotice />
+        {/* Settings Button */}
+        <div className="fixed bottom-4 right-4 z-50">
+          <Button
+            onClick={() => navigate('/settings')}
+            className="rounded-full shadow-lg hover:shadow-xl transition-shadow"
+            size="lg"
+          >
+            <Settings className="h-5 w-5 mr-2" />
+            {t('settings')}
+          </Button>
+        </div>
         <ResidentDashboard />
       </div>
     );

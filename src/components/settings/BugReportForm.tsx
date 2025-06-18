@@ -6,14 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const BugReportForm = () => {
+interface BugReportFormProps {
+  onSuccess?: () => void;
+}
+
+const BugReportForm: React.FC<BugReportFormProps> = ({ onSuccess }) => {
   const [bugTitle, setBugTitle] = useState('');
   const [bugDescription, setBugDescription] = useState('');
   const [severity, setSeverity] = useState('');
   const [stepsToReproduce, setStepsToReproduce] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,11 +35,30 @@ const BugReportForm = () => {
 
     setIsSubmitting(true);
     
-    // Simulate API call
+    // Create mailto link
+    const subject = `Bug Report: ${bugTitle}`;
+    const body = `Bug Title: ${bugTitle}
+Severity: ${severity}
+
+Description:
+${bugDescription}
+
+${stepsToReproduce ? `Steps to Reproduce:
+${stepsToReproduce}` : ''}
+
+---
+Browser: ${navigator.userAgent}
+Sent from Settings Page`;
+    
+    const mailtoLink = `mailto:albhyrytwamrwhy@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    // Open email client
+    window.location.href = mailtoLink;
+    
     setTimeout(() => {
       toast({
-        title: "Bug report submitted! 🐛",
-        description: "Our dev team will investigate this faster than you can say 'stack overflow'"
+        title: t('bugReported'),
+        description: t('devInvestigate')
       });
       
       // Reset form
@@ -42,21 +67,15 @@ const BugReportForm = () => {
       setSeverity('');
       setStepsToReproduce('');
       setIsSubmitting(false);
+      onSuccess?.();
     }, 1000);
   };
 
   return (
     <div className="space-y-4">
-      <div>
-        <h3 className="text-base font-medium mb-2">Report a Bug</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Found a glitch? Help us squash it! Our code needs all the first-aid it can get 🩹
-        </p>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="bug-title">Bug Title *</Label>
+          <Label htmlFor="bug-title">{t('bugTitle')} *</Label>
           <Input
             id="bug-title"
             value={bugTitle}
@@ -68,7 +87,7 @@ const BugReportForm = () => {
         </div>
 
         <div>
-          <Label htmlFor="severity">Severity *</Label>
+          <Label htmlFor="severity">{t('severity')} *</Label>
           <Select value={severity} onValueChange={setSeverity}>
             <SelectTrigger className="mt-2">
               <SelectValue placeholder="How bad is it?" />
@@ -83,7 +102,7 @@ const BugReportForm = () => {
         </div>
 
         <div>
-          <Label htmlFor="bug-description">Bug Description *</Label>
+          <Label htmlFor="bug-description">{t('bugDescription')} *</Label>
           <Textarea
             id="bug-description"
             value={bugDescription}
@@ -112,9 +131,9 @@ const BugReportForm = () => {
         <Button 
           type="submit" 
           disabled={isSubmitting}
-          className="w-full sm:w-auto"
+          className="w-full"
         >
-          {isSubmitting ? "Submitting..." : "Report Bug 🐛"}
+          {isSubmitting ? "Submitting..." : t('reportBugBtn')}
         </Button>
       </form>
     </div>

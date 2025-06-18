@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const WarningBanner = () => {
   const [isVisible, setIsVisible] = useState(true);
+  const { t } = useLanguage();
 
   if (!isVisible) return null;
 
@@ -14,8 +16,7 @@ const WarningBanner = () => {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <AlertDescription className="text-sm">
-            <span className="font-semibold">🎉 Heads up!</span> This app is completely free—for now! 
-            We're in our startup phase and loving every caffeinated moment. Enjoy all features while we perfect this magic! ✨
+            <span className="font-semibold">{t('headsUp')}</span> {t('freeApp')}
           </AlertDescription>
         </div>
         <Button

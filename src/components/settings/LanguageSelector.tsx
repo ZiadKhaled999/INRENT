@@ -1,47 +1,28 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const LanguageSelector = () => {
-  const [language, setLanguage] = useState('en');
+  const { language, setLanguage, t } = useLanguage();
 
   const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' }
+    { code: 'en', name: t('english'), flag: '🇺🇸' },
+    { code: 'ar', name: t('arabic'), flag: '🇸🇦' },
+    { code: 'es', name: t('spanish'), flag: '🇪🇸' }
   ];
-
-  useEffect(() => {
-    // Get saved language or default to English
-    const savedLanguage = localStorage.getItem('language') || 'en';
-    setLanguage(savedLanguage);
-  }, []);
-
-  const handleLanguageChange = (newLanguage: string) => {
-    setLanguage(newLanguage);
-    localStorage.setItem('language', newLanguage);
-    
-    // Apply RTL for Arabic
-    if (newLanguage === 'ar') {
-      document.documentElement.dir = 'rtl';
-      document.documentElement.lang = 'ar';
-    } else {
-      document.documentElement.dir = 'ltr';
-      document.documentElement.lang = newLanguage;
-    }
-  };
 
   return (
     <div className="space-y-4">
       <div>
-        <Label className="text-base font-medium">Language</Label>
+        <Label className="text-base font-medium">{t('language')}</Label>
         <p className="text-sm text-muted-foreground mt-1 mb-4">
-          Choose your preferred language (with graceful fallbacks to English)
+          {t('chooseLanguage')}
         </p>
       </div>
       
-      <Select value={language} onValueChange={handleLanguageChange}>
+      <Select value={language} onValueChange={setLanguage}>
         <SelectTrigger className="w-full sm:w-[300px]">
           <SelectValue placeholder="Select a language" />
         </SelectTrigger>
@@ -56,10 +37,6 @@ const LanguageSelector = () => {
           ))}
         </SelectContent>
       </Select>
-      
-      <div className="text-xs text-muted-foreground">
-        Note: Some features may still appear in English while we work on translations
-      </div>
     </div>
   );
 };

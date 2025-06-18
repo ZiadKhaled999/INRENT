@@ -4,10 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Star, Share } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const RateAndShare = () => {
   const [userRating, setUserRating] = useState(0);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleRating = (rating: number) => {
     setUserRating(rating);
@@ -50,9 +52,9 @@ const RateAndShare = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg sm:text-xl">Rate & Share</CardTitle>
+        <CardTitle className="text-lg sm:text-xl">{t('rateShare')}</CardTitle>
         <CardDescription>
-          Love the app? Help spread the word to your amigos! 🎉
+          {t('loveApp')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

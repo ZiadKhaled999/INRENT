@@ -2,9 +2,11 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const AboutSection = () => {
+  const { t } = useLanguage();
+  
   const teamMembers = [
     { name: "Alex the Code Whisperer", role: "Full-Stack Wizard", quirk: "Talks to bugs (literally)" },
     { name: "Sam the Design Ninja", role: "UI/UX Perfectionist", quirk: "Has 47 shades of blue favorited" },
@@ -14,9 +16,9 @@ const AboutSection = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg sm:text-xl">About Us</CardTitle>
+        <CardTitle className="text-lg sm:text-xl">{t('aboutUs')}</CardTitle>
         <CardDescription>
-          The scrappy startup behind this magical rent management experience
+          {t('scrappyStartup')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
