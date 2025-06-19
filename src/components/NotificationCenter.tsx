@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +23,7 @@ interface Notification {
 const NotificationCenter = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletedNotificationIds, setDeletedNotificationIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -49,7 +51,11 @@ const NotificationCenter = () => {
         },
         (payload) => {
           console.log('New notification received:', payload);
-          setNotifications(prev => [payload.new as Notification, ...prev]);
+          const newNotification = payload.new as Notification;
+          // Only add if not in deleted list
+          if (!deletedNotificationIds.has(newNotification.id)) {
+            setNotifications(prev => [newNotification, ...prev]);
+          }
         }
       )
       .on(
@@ -62,9 +68,13 @@ const NotificationCenter = () => {
         },
         (payload) => {
           console.log('Notification updated:', payload);
-          setNotifications(prev => 
-            prev.map(n => n.id === payload.new.id ? payload.new as Notification : n)
-          );
+          const updatedNotification = payload.new as Notification;
+          // Only update if not in deleted list
+          if (!deletedNotificationIds.has(updatedNotification.id)) {
+            setNotifications(prev => 
+              prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
+            );
+          }
         }
       )
       .on(
@@ -77,7 +87,10 @@ const NotificationCenter = () => {
         },
         (payload) => {
           console.log('Notification deleted via realtime:', payload);
-          setNotifications(prev => prev.filter(n => n.id !== payload.old.id));
+          const deletedId = payload.old.id;
+          // Add to deleted list and remove from notifications
+          setDeletedNotificationIds(prev => new Set([...prev, deletedId]));
+          setNotifications(prev => prev.filter(n => n.id !== deletedId));
         }
       )
       .subscribe();
@@ -85,7 +98,7 @@ const NotificationCenter = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [user?.id, deletedNotificationIds]);
 
   const fetchNotifications = async () => {
     try {
@@ -96,7 +109,13 @@ const NotificationCenter = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setNotifications(data || []);
+      
+      // Filter out any notifications that were previously deleted in this session
+      const filteredData = (data || []).filter(notification => 
+        !deletedNotificationIds.has(notification.id)
+      );
+      
+      setNotifications(filteredData);
     } catch (error: any) {
       console.error('Error fetching notifications:', error);
       toast({
@@ -113,7 +132,10 @@ const NotificationCenter = () => {
     try {
       console.log('Starting deletion process for notification:', notificationId);
       
-      // Optimistically remove from UI first
+      // Add to deleted list immediately to prevent re-appearance
+      setDeletedNotificationIds(prev => new Set([...prev, notificationId]));
+      
+      // Optimistically remove from UI
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       
       const { error } = await supabase
