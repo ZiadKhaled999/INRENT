@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, DollarSign, Calendar, Bell, Shield, Heart, Menu, X, ArrowRight, CheckCircle } from "lucide-react";
+import { Users, DollarSign, Calendar, Bell, Shield, Heart, Menu, X, ArrowRight, CheckCircle, Mail, MapPin, Code, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
 
@@ -297,18 +297,18 @@ const Index = () => {
                 </Button>
               </div>
 
-              <div className="flex flex-wrap justify-center items-center gap-8 text-slate-500 text-sm animate-[fadeInUp_1s_ease-out_1s_both]">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap justify-center items-center gap-8 text-slate-500 text-sm animate-[fadeInUp_1s_ease-out_1s_both] relative">
+                <div className="flex items-center gap-2 relative z-10">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
                   No credit card required
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 relative z-10">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  Setup in 30 seconds
+                  <span className="animate-[textSlide_3s_ease-in-out_infinite]">Setup in 30 seconds</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 relative z-10">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  Privacy first
+                  <span className="animate-[textPulse_2s_ease-in-out_infinite]">Privacy first</span>
                 </div>
               </div>
             </div>
@@ -535,19 +535,256 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Footer with Privacy Policy Links */}
-        <footer className="bg-white border-t border-emerald-200 py-16">
-          <div className="container mx-auto px-6 text-center">
-            <div className="flex items-center justify-center space-x-3 mb-6 animate-[fadeInUp_0.6s_ease-out]">
-              <AppLogoWithBg size={32} shadow={false} />
-              <span className="text-2xl font-bold bg-gradient-to-r from-emerald-700 to-green-700 bg-clip-text text-transparent">Rentable</span>
+        {/* Professional Footer with Rentable-specific content */}
+        <footer className="bg-gradient-to-br from-emerald-900 via-green-900 to-teal-900 text-white py-20 relative overflow-hidden">
+          {/* Animated Background */}
+          <div className="absolute inset-0 overflow-hidden">
+            <svg className="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 1200 600">
+              <defs>
+                <linearGradient id="footerFlow1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#34d399" stopOpacity="0.6" />
+                  <stop offset="50%" stopColor="#10b981" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#059669" stopOpacity="0.6" />
+                </linearGradient>
+                <linearGradient id="footerFlow2" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity="0.5" />
+                  <stop offset="50%" stopColor="#34d399" stopOpacity="0.7" />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity="0.5" />
+                </linearGradient>
+              </defs>
+              
+              {/* Flowing lines representing rent payments */}
+              <path
+                d="M0,150 Q300,100 600,150 Q900,200 1200,150"
+                stroke="url(#footerFlow1)"
+                strokeWidth="3"
+                fill="none"
+                className="animate-[footerFlow1_4s_ease-in-out_infinite]"
+                strokeDasharray="40,25"
+              />
+              <path
+                d="M0,250 Q400,200 800,250 Q1000,300 1200,250"
+                stroke="url(#footerFlow2)"
+                strokeWidth="2"
+                fill="none"
+                className="animate-[footerFlow2_3.5s_ease-in-out_infinite_reverse]"
+                strokeDasharray="30,20"
+              />
+              <path
+                d="M0,350 C200,320 400,380 600,350 C800,320 1000,380 1200,350"
+                stroke="url(#footerFlow1)"
+                strokeWidth="2"
+                fill="none"
+                className="animate-[footerFlow3_5s_ease-in-out_infinite]"
+                strokeDasharray="25,15"
+              />
+              <path
+                d="M0,450 Q250,400 500,450 Q750,500 1000,450 Q1100,425 1200,450"
+                stroke="url(#footerFlow2)"
+                strokeWidth="1.5"
+                fill="none"
+                className="animate-[footerFlow4_4.5s_ease-in-out_infinite_reverse]"
+                strokeDasharray="20,12"
+              />
+            </svg>
+          </div>
+
+          <div className="container mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+              
+              {/* Brand Section */}
+              <div className="lg:col-span-1">
+                <div className="flex items-center space-x-3 mb-6 animate-[fadeInUp_0.8s_ease-out]">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full blur-md opacity-50"></div>
+                    <AppLogoWithBg size={40} className="relative z-10" />
+                  </div>
+                  <span className="text-2xl font-bold bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">
+                    Rentable
+                  </span>
+                </div>
+                <p className="text-green-200 mb-6 text-sm leading-relaxed animate-[fadeInUp_0.8s_ease-out_0.2s_both]">
+                  Rentable is a dynamic app designed to simplify your rent splitting by offering fair, transparent tools for roommates. Whether you're managing household finances or tracking payments.
+                </p>
+                <div className="flex space-x-4 animate-[fadeInUp_0.8s_ease-out_0.4s_both]">
+                  <div className="w-10 h-10 bg-green-800/50 hover:bg-green-700/70 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer group">
+                    <Facebook className="w-5 h-5 text-green-200 group-hover:text-white group-hover:scale-110 transition-all duration-300" />
+                  </div>
+                  <div className="w-10 h-10 bg-green-800/50 hover:bg-green-700/70 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer group">
+                    <Twitter className="w-5 h-5 text-green-200 group-hover:text-white group-hover:scale-110 transition-all duration-300" />
+                  </div>
+                  <div className="w-10 h-10 bg-green-800/50 hover:bg-green-700/70 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer group">
+                    <Instagram className="w-5 h-5 text-green-200 group-hover:text-white group-hover:scale-110 transition-all duration-300" />
+                  </div>
+                  <div className="w-10 h-10 bg-green-800/50 hover:bg-green-700/70 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer group">
+                    <Linkedin className="w-5 h-5 text-green-200 group-hover:text-white group-hover:scale-110 transition-all duration-300" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Links */}
+              <div className="animate-[fadeInUp_0.8s_ease-out_0.3s_both]">
+                <h3 className="text-xl font-bold text-white mb-6">Our Links</h3>
+                <ul className="space-y-3">
+                  <li>
+                    <button 
+                      onClick={() => navigate('/')}
+                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
+                    >
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      Home
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => navigate('/documentation')}
+                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
+                    >
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      How It Works
+                    </button>
+                  </li>
+                  <li>
+                    <a 
+                      href="#features"
+                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
+                    >
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      Features
+                    </a>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => navigate('/dashboard')}
+                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
+                    >
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      Dashboard
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => navigate('/settings')}
+                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
+                    >
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      Settings
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Other Links */}
+              <div className="animate-[fadeInUp_0.8s_ease-out_0.4s_both]">
+                <h3 className="text-xl font-bold text-white mb-6">Other Links</h3>
+                <ul className="space-y-3">
+                  <li>
+                    <a 
+                      href="#privacy"
+                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
+                    >
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      Privacy Policy
+                    </a>
+                  </li>
+                  <li>
+                    <a 
+                      href="#terms"
+                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
+                    >
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      Terms & Conditions
+                    </a>
+                  </li>
+                  <li>
+                    <a 
+                      href="#security"
+                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
+                    >
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      Security
+                    </a>
+                  </li>
+                  <li>
+                    <a 
+                      href="#support"
+                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
+                    >
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      Support
+                    </a>
+                  </li>
+                  <li>
+                    <a 
+                      href="#faq"
+                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
+                    >
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      FAQ
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Contact Section */}
+              <div className="animate-[fadeInUp_0.8s_ease-out_0.5s_both]">
+                <h3 className="text-xl font-bold text-white mb-6">Contact Us</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3 group">
+                    <div className="w-8 h-8 bg-green-800/50 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-700/70 transition-all duration-300">
+                      <Mail className="w-4 h-4 text-green-200 group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <div>
+                      <p className="text-green-200 text-sm group-hover:text-white transition-colors duration-300">
+                        support@rentable.app
+                      </p>
+                      <p className="text-green-300 text-xs group-hover:text-green-100 transition-colors duration-300">
+                        hello@rentable.app
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3 group">
+                    <div className="w-8 h-8 bg-green-800/50 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-700/70 transition-all duration-300">
+                      <MapPin className="w-4 h-4 text-green-200 group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <p className="text-green-200 text-sm group-hover:text-white transition-colors duration-300">
+                      San Francisco, CA
+                    </p>
+                  </div>
+                  <div className="flex items-start space-x-3 group">
+                    <div className="w-8 h-8 bg-green-800/50 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-700/70 transition-all duration-300">
+                      <Code className="w-4 h-4 text-green-200 group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <div>
+                      <p className="text-green-200 text-sm group-hover:text-white transition-colors duration-300">
+                        Built by Renters
+                      </p>
+                      <p className="text-green-300 text-xs group-hover:text-green-100 transition-colors duration-300">
+                        For Renters
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-wrap justify-center items-center gap-6 text-slate-600 animate-[fadeInUp_0.6s_ease-out_0.2s_both]">
-              <a href="#privacy" className="hover:text-emerald-600 transition-colors">Privacy Policy</a>
-              <span className="text-slate-400">•</span>
-              <a href="#terms" className="hover:text-emerald-600 transition-colors">Terms of Service</a>
-              <span className="text-slate-400">•</span>
-              <a href="#contact" className="hover:text-emerald-600 transition-colors">Contact</a>
+
+            {/* Footer Bottom */}
+            <div className="border-t border-green-800/50 pt-8 mt-8">
+              <div className="flex flex-col md:flex-row justify-between items-center animate-[fadeInUp_0.8s_ease-out_0.6s_both]">
+                <p className="text-green-300 text-sm mb-4 md:mb-0">
+                  © 2024 <span className="font-semibold bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">Rentable</span>. All rights reserved.
+                </p>
+                <div className="flex items-center space-x-6 text-sm">
+                  <span className="text-green-200 flex items-center">
+                    <Shield className="w-4 h-4 mr-2 animate-[iconPulse_2s_ease-in-out_infinite]" />
+                    Privacy First
+                  </span>
+                  <span className="text-green-200 flex items-center">
+                    <Heart className="w-4 h-4 mr-2 animate-[heartBeat_2s_ease-in-out_infinite]" />
+                    Made with Love
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </footer>
@@ -564,6 +801,18 @@ const Index = () => {
               opacity: 1;
               transform: translateY(0);
             }
+          }
+
+          @keyframes textSlide {
+            0%, 100% { transform: translateX(0); opacity: 1; }
+            25% { transform: translateX(5px); opacity: 0.8; }
+            50% { transform: translateX(-3px); opacity: 1; }
+            75% { transform: translateX(2px); opacity: 0.9; }
+          }
+
+          @keyframes textPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.98); }
           }
 
           @keyframes moneyFlow1 {
@@ -606,19 +855,19 @@ const Index = () => {
             50% { stroke-dashoffset: -46; }
           }
 
-          @keyframes fastWave1 {
+          @keyframes smoothWave1 {
             0% { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: 45; }
+            100% { stroke-dashoffset: 35; }
           }
 
-          @keyframes fastWave2 {
+          @keyframes smoothWave2 {
             0% { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: -35; }
+            100% { stroke-dashoffset: -25; }
           }
 
-          @keyframes fastWave3 {
+          @keyframes smoothWave3 {
             0% { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: 25; }
+            100% { stroke-dashoffset: 20; }
           }
 
           @keyframes connectionFlow {
@@ -644,6 +893,33 @@ const Index = () => {
           @keyframes slideDown {
             from { transform: translateY(-100%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
+          }
+
+          @keyframes footerFlow1 {
+            0%, 100% { stroke-dashoffset: 0; opacity: 0.6; }
+            50% { stroke-dashoffset: 65; opacity: 1; }
+          }
+
+          @keyframes footerFlow2 {
+            0%, 100% { stroke-dashoffset: 0; opacity: 0.5; }
+            50% { stroke-dashoffset: -50; opacity: 0.8; }
+          }
+
+          @keyframes footerFlow3 {
+            0%, 100% { stroke-dashoffset: 0; opacity: 0.4; }
+            50% { stroke-dashoffset: 40; opacity: 0.7; }
+          }
+
+          @keyframes footerFlow4 {
+            0%, 100% { stroke-dashoffset: 0; opacity: 0.3; }
+            50% { stroke-dashoffset: -32; opacity: 0.6; }
+          }
+
+          @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.05); }
           }
         `}
       </style>
