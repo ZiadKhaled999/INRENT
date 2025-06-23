@@ -23,7 +23,6 @@ interface Notification {
 const NotificationCenter = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deletedNotificationIds, setDeletedNotificationIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -35,7 +34,7 @@ const NotificationCenter = () => {
     }
   }, [user]);
 
-  // Real-time subscription for notifications
+  // Real-time subscription for notifications with proper cleanup
   useEffect(() => {
     if (!user?.id) return;
 
@@ -52,10 +51,7 @@ const NotificationCenter = () => {
         (payload) => {
           console.log('New notification received:', payload);
           const newNotification = payload.new as Notification;
-          // Only add if not in deleted list
-          if (!deletedNotificationIds.has(newNotification.id)) {
-            setNotifications(prev => [newNotification, ...prev]);
-          }
+          setNotifications(prev => [newNotification, ...prev]);
         }
       )
       .on(
@@ -69,12 +65,9 @@ const NotificationCenter = () => {
         (payload) => {
           console.log('Notification updated:', payload);
           const updatedNotification = payload.new as Notification;
-          // Only update if not in deleted list
-          if (!deletedNotificationIds.has(updatedNotification.id)) {
-            setNotifications(prev => 
-              prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
-            );
-          }
+          setNotifications(prev => 
+            prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
+          );
         }
       )
       .on(
@@ -88,8 +81,6 @@ const NotificationCenter = () => {
         (payload) => {
           console.log('Notification deleted via realtime:', payload);
           const deletedId = payload.old.id;
-          // Add to deleted list and remove from notifications
-          setDeletedNotificationIds(prev => new Set([...prev, deletedId]));
           setNotifications(prev => prev.filter(n => n.id !== deletedId));
         }
       )
@@ -98,7 +89,7 @@ const NotificationCenter = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, deletedNotificationIds]);
+  }, [user?.id]);
 
   const fetchNotifications = async () => {
     try {
@@ -110,12 +101,7 @@ const NotificationCenter = () => {
 
       if (error) throw error;
       
-      // Filter out any notifications that were previously deleted in this session
-      const filteredData = (data || []).filter(notification => 
-        !deletedNotificationIds.has(notification.id)
-      );
-      
-      setNotifications(filteredData);
+      setNotifications(data || []);
     } catch (error: any) {
       console.error('Error fetching notifications:', error);
       toast({
@@ -130,28 +116,24 @@ const NotificationCenter = () => {
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      console.log('Starting deletion process for notification:', notificationId);
+      console.log('Attempting to delete notification:', notificationId);
       
-      // Add to deleted list immediately to prevent re-appearance
-      setDeletedNotificationIds(prev => new Set([...prev, notificationId]));
-      
-      // Optimistically remove from UI
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
-      
+      // Perform the delete operation with proper error handling
       const { error } = await supabase
         .from('notifications')
         .delete()
         .eq('id', notificationId)
-        .eq('user_id', user?.id);
+        .eq('user_id', user?.id); // Extra security check
 
       if (error) {
-        console.error('Database deletion failed:', error);
-        // Revert optimistic update on error
-        await fetchNotifications();
+        console.error('Supabase delete error:', error);
         throw error;
       }
 
       console.log('Notification deleted successfully from database');
+      
+      // Optimistic update - remove from local state immediately
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
       
       toast({
         title: "Notification deleted",
@@ -164,6 +146,8 @@ const NotificationCenter = () => {
         description: error.message,
         variant: "destructive",
       });
+      // Refresh notifications to ensure UI is in sync
+      await fetchNotifications();
     }
   };
 
@@ -328,8 +312,13 @@ const NotificationCenter = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => deleteNotification(notification.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  deleteNotification(notification.id);
+                }}
                 className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 ml-2"
+                aria-label={`Delete notification: ${notification.title}`}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
