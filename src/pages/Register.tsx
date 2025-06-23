@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
+import EmailVerificationAlert from "@/components/EmailVerificationAlert";
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -15,6 +15,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showVerificationAlert, setShowVerificationAlert] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -62,12 +63,8 @@ const Register = () => {
       }
 
       if (data.user) {
-        toast({
-          title: "Welcome to Rentable!",
-          description: "Your account has been created successfully.",
-        });
-        
-        navigate('/dashboard');
+        // Show professional verification alert instead of toast
+        setShowVerificationAlert(true);
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -81,107 +78,122 @@ const Register = () => {
     }
   };
 
+  const handleCloseAlert = () => {
+    setShowVerificationAlert(false);
+    navigate('/login');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-4">
-            <AppLogoWithBg size={60} />
-            <span className="text-2xl font-bold text-gray-900 mt-1">Rentable</span>
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Join Rentable</h1>
-          <p className="text-sm sm:text-base text-gray-600">Start splitting rent fairly with your roommates</p>
-        </div>
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-4">
+              <AppLogoWithBg size={60} />
+              <span className="text-2xl font-bold text-gray-900 mt-1">Rentable</span>
+            </Link>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Join Rentable</h1>
+            <p className="text-sm sm:text-base text-gray-600">Start splitting rent fairly with your roommates</p>
+          </div>
 
-        <Card className="shadow-xl border-0">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-xl sm:text-2xl text-center">Create Account</CardTitle>
-            <CardDescription className="text-center text-sm sm:text-base">
-              Set up your free account to get started
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={handleRegister} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm sm:text-base">Full Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="h-11 text-sm sm:text-base"
-                />
+          <Card className="shadow-xl border-0">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-xl sm:text-2xl text-center">Create Account</CardTitle>
+              <CardDescription className="text-center text-sm sm:text-base">
+                Set up your free account to get started
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm sm:text-base">Full Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="h-11 text-sm sm:text-base"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="h-11 text-sm sm:text-base"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Create a password (min 6 characters)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="h-11 text-sm sm:text-base"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm sm:text-base">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="h-11 text-sm sm:text-base"
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-sm sm:text-base touch-manipulation"
+                  disabled={loading}
+                >
+                  {loading ? "Creating Account..." : "Create Account"}
+                </Button>
+              </form>
+
+              <div className="text-center">
+                <p className="text-xs sm:text-sm text-gray-600">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-blue-600 hover:underline font-medium">
+                    Sign in
+                  </Link>
+                </p>
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-11 text-sm sm:text-base"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Create a password (min 6 characters)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="h-11 text-sm sm:text-base"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm sm:text-base">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="h-11 text-sm sm:text-base"
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-sm sm:text-base touch-manipulation"
-                disabled={loading}
-              >
-                {loading ? "Creating Account..." : "Create Account"}
-              </Button>
-            </form>
-
-            <div className="text-center">
-              <p className="text-xs sm:text-sm text-gray-600">
-                Already have an account?{" "}
-                <Link to="/login" className="text-blue-600 hover:underline font-medium">
-                  Sign in
-                </Link>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="text-center mt-6 text-xs sm:text-sm text-gray-500">
-          <p>By creating an account, you're joining our community-driven mission</p>
-          <p>to make rent splitting fair and transparent for everyone.</p>
+          <div className="text-center mt-6 text-xs sm:text-sm text-gray-500">
+            <p>By creating an account, you're joining our community-driven mission</p>
+            <p>to make rent splitting fair and transparent for everyone.</p>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Professional Email Verification Alert */}
+      {showVerificationAlert && (
+        <EmailVerificationAlert 
+          email={email} 
+          onClose={handleCloseAlert}
+        />
+      )}
+    </>
   );
 };
 
