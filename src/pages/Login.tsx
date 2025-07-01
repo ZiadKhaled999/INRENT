@@ -38,7 +38,7 @@ const Login = () => {
 
       toast({
         title: "Welcome back!",
-        description: "Successfully logged in to Rentable.",
+        description: "Successfully logged in to InRent.",
       });
       
       navigate('/dashboard');
@@ -61,7 +61,7 @@ const Login = () => {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-4">
             <AppLogoWithBg size={60} />
-            <span className="text-2xl font-bold text-gray-900 mt-1">Rentable</span>
+            <span className="text-2xl font-bold text-gray-900 mt-1">InRent</span>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to manage your household expenses</p>
@@ -123,7 +123,7 @@ const Login = () => {
         </Card>
 
         <div className="text-center mt-6 text-sm text-gray-500">
-          <p>Rentable is free, open-source, and community-driven</p>
+          <p>InRent is free, open-source, and community-driven</p>
         </div>
       </div>
     </div>

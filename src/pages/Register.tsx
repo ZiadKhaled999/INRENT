@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,9 +92,9 @@ const Register = () => {
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-4">
               <AppLogoWithBg size={60} />
-              <span className="text-2xl font-bold text-gray-900 mt-1">Rentable</span>
+              <span className="text-2xl font-bold text-gray-900 mt-1">InRent</span>
             </Link>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Join Rentable</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Join InRent</h1>
             <p className="text-sm sm:text-base text-gray-600">Start splitting rent fairly with your roommates</p>
           </div>
 

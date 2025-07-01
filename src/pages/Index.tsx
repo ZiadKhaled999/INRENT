@@ -173,7 +173,7 @@ const Index = () => {
                   <AppLogoWithBg size={42} className="relative z-10 shadow-xl" />
                 </div>
                 <span className="text-2xl font-bold bg-gradient-to-r from-emerald-700 via-green-600 to-teal-700 bg-clip-text text-transparent">
-                  Rentable
+                  InRent
                 </span>
               </div>
               
@@ -199,16 +199,16 @@ const Index = () => {
               <div className="hidden md:flex items-center space-x-3">
                 <Button 
                   variant="ghost" 
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/landing')}
                   className="text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 font-medium transition-all duration-300"
                 >
                   Sign In
                 </Button>
                 <Button 
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate('/download')}
                   className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium px-6 shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                 >
-                  Get Started
+                  Download App
                 </Button>
               </div>
 
@@ -236,16 +236,16 @@ const Index = () => {
                   <div className="flex flex-col space-y-3 pt-4 border-t border-emerald-200">
                     <Button 
                       variant="ghost" 
-                      onClick={() => navigate('/login')}
+                      onClick={() => navigate('/landing')}
                       className="justify-start text-slate-700 hover:bg-emerald-50"
                     >
                       Sign In
                     </Button>
                     <Button 
-                      onClick={() => navigate('/register')}
+                      onClick={() => navigate('/download')}
                       className="bg-gradient-to-r from-emerald-600 to-green-600 text-white"
                     >
-                      Get Started
+                      Download App
                     </Button>
                   </div>
                 </div>
@@ -281,10 +281,10 @@ const Index = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 animate-[fadeInUp_1s_ease-out_0.8s_both]">
                 <Button 
                   size="lg" 
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate('/download')}
                   className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 group border-0"
                 >
-                  Start Splitting Rent
+                  Download InRent
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button 
@@ -515,15 +515,15 @@ const Index = () => {
                 </span>
               </h2>
               <p className="text-xl md:text-2xl text-slate-600 mb-12 font-light animate-[fadeInUp_0.8s_ease-out_0.2s_both]">
-                Join thousands of roommates who've found peace of mind with Rentable.
+                Join thousands of roommates who've found peace of mind with InRent.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-[fadeInUp_0.8s_ease-out_0.4s_both]">
                 <Button 
                   size="lg" 
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate('/download')}
                   className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-12 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 group border-0"
                 >
-                  Get Started for Free
+                  Download InRent
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <div className="flex items-center text-sm text-slate-500 mt-4 sm:mt-0 sm:ml-8">
@@ -535,7 +535,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Professional Footer with Rentable-specific content */}
+        {/* Professional Footer with InRent-specific content */}
         <footer className="bg-gradient-to-br from-emerald-900 via-green-900 to-teal-900 text-white py-20 relative overflow-hidden">
           {/* Animated Background */}
           <div className="absolute inset-0 overflow-hidden">
@@ -600,11 +600,11 @@ const Index = () => {
                     <AppLogoWithBg size={40} className="relative z-10" />
                   </div>
                   <span className="text-2xl font-bold bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">
-                    Rentable
+                    InRent
                   </span>
                 </div>
                 <p className="text-green-200 mb-6 text-sm leading-relaxed animate-[fadeInUp_0.8s_ease-out_0.2s_both]">
-                  Rentable is a dynamic app designed to simplify your rent splitting by offering fair, transparent tools for roommates. Whether you're managing household finances or tracking payments.
+                  InRent is a dynamic app designed to simplify your rent splitting by offering fair, transparent tools for roommates. Whether you're managing household finances or tracking payments.
                 </p>
                 <div className="flex space-x-4 animate-[fadeInUp_0.8s_ease-out_0.4s_both]">
                   <div className="w-10 h-10 bg-green-800/50 hover:bg-green-700/70 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer group">
@@ -772,7 +772,7 @@ const Index = () => {
             <div className="border-t border-green-800/50 pt-8 mt-8">
               <div className="flex flex-col md:flex-row justify-between items-center animate-[fadeInUp_0.8s_ease-out_0.6s_both]">
                 <p className="text-green-300 text-sm mb-4 md:mb-0">
-                  © 2024 <span className="font-semibold bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">Rentable</span>. All rights reserved.
+                  © 2024 <span className="font-semibold bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">InRent</span>. All rights reserved.
                 </p>
                 <div className="flex items-center space-x-6 text-sm">
                   <span className="text-green-200 flex items-center">

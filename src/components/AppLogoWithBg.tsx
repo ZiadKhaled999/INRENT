@@ -7,7 +7,7 @@ interface AppLogoWithBgProps {
   className?: string;
 }
 
-const LOGO_SRC = "/lovable-uploads/ff5803ec-2385-43a8-aebc-d33664bd076d.png";
+const LOGO_SRC = "/lovable-uploads/491dda36-0dcd-40f4-8360-3b186030816d.png";
 
 const AppLogoWithBg: React.FC<AppLogoWithBgProps> = ({
   size = 56, // default to 56px
@@ -15,7 +15,7 @@ const AppLogoWithBg: React.FC<AppLogoWithBgProps> = ({
   className = "",
 }) => (
   <span
-    className={`inline-flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-green-300 to-white ${shadow ? "shadow-lg" : ""} ${className}`}
+    className={`inline-flex items-center justify-center ${shadow ? "shadow-lg" : ""} ${className}`}
     style={{
       width: size,
       height: size,
@@ -25,12 +25,11 @@ const AppLogoWithBg: React.FC<AppLogoWithBgProps> = ({
   >
     <img
       src={LOGO_SRC}
-      alt="Rentable logo"
+      alt="InRent logo"
       style={{
-        width: size * 0.8,
-        height: size * 0.8,
+        width: size,
+        height: size,
         objectFit: "contain",
-        borderRadius: "0.5rem", // subtle rounding on inner logo
       }}
       loading="lazy"
     />
