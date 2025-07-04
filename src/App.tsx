@@ -17,6 +17,10 @@ import HouseholdDetail from "./pages/HouseholdDetail";
 import JoinHousehold from "./pages/JoinHousehold";
 import Documentation from "./pages/Documentation";
 import Settings from "./pages/Settings";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import Landing from "./pages/Landing";
+import Download from "./pages/Download";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -33,8 +37,12 @@ const App: React.FC = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/landing" element={<Landing />} />
+                <Route path="/download" element={<Download />} />
                 <Route path="/documentation" element={<Documentation />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/join" element={<JoinHousehold />} />

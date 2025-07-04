@@ -8,8 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
 
-const LOGO_SRC = "/lovable-uploads/ff5803ec-2385-43a8-aebc-d33664bd076d.png";
-
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -55,29 +53,40 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 relative"
+      style={{
+        backgroundImage: `url(/lovable-uploads/67ca151f-1f97-495d-9839-9326856d388b.png)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Overlay for better readability */}
+      <div className="absolute inset-0 bg-white/20 backdrop-blur-sm"></div>
+      
+      <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-4">
-            <AppLogoWithBg size={60} />
-            <span className="text-2xl font-bold text-gray-900 mt-1">InRent</span>
+          <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-6">
+            <AppLogoWithBg size={80} />
+            <span className="text-3xl font-bold text-white drop-shadow-lg">InRent</span>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to manage your household expenses</p>
+          <h1 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">Welcome Back</h1>
+          <p className="text-white/90 drop-shadow">Sign in to manage your household expenses</p>
         </div>
 
-        <Card className="shadow-xl border-0">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Sign In</CardTitle>
-            <CardDescription className="text-center">
-              Enter your email and password to access your account
+        <Card className="backdrop-blur-md bg-white/90 shadow-2xl border-0 rounded-3xl">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-2xl text-center text-gray-800">Sign In</CardTitle>
+            <CardDescription className="text-center text-gray-600">
+              Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={handleLogin} className="space-y-4">
+          <CardContent className="space-y-6 px-8 pb-8">
+            <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -85,12 +94,12 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-11"
+                  className="h-12 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white/80"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -98,32 +107,41 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-11"
+                  className="h-12 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white/80"
                 />
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                className="w-full h-12 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 rounded-xl text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                 disabled={loading}
               >
                 {loading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
 
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-4">
               <p className="text-sm text-gray-600">
                 Don't have an account?{" "}
-                <Link to="/register" className="text-blue-600 hover:underline font-medium">
+                <Link to="/register" className="text-blue-600 hover:text-blue-800 font-semibold hover:underline">
                   Sign up
                 </Link>
               </p>
+              
+              <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                <Link to="/privacy" className="text-xs text-gray-500 hover:text-gray-700 hover:underline">
+                  Privacy Policy
+                </Link>
+                <Link to="/terms" className="text-xs text-gray-500 hover:text-gray-700 hover:underline">
+                  Terms of Service
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6 text-sm text-gray-500">
-          <p>InRent is free, open-source, and community-driven</p>
+        <div className="text-center mt-6 text-sm text-white/80 drop-shadow">
+          <p>InRent - Fair rent splitting made simple</p>
         </div>
       </div>
     </div>

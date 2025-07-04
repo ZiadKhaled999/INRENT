@@ -86,29 +86,40 @@ const Register = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 relative"
+        style={{
+          backgroundImage: `url(/lovable-uploads/67ca151f-1f97-495d-9839-9326856d388b.png)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Overlay for better readability */}
+        <div className="absolute inset-0 bg-white/20 backdrop-blur-sm"></div>
+        
+        <div className="w-full max-w-md relative z-10">
           {/* Header */}
           <div className="text-center mb-8">
-            <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-4">
-              <AppLogoWithBg size={60} />
-              <span className="text-2xl font-bold text-gray-900 mt-1">InRent</span>
+            <Link to="/" className="inline-flex flex-col items-center space-y-2 mb-6">
+              <AppLogoWithBg size={80} />
+              <span className="text-3xl font-bold text-white drop-shadow-lg">InRent</span>
             </Link>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Join InRent</h1>
-            <p className="text-sm sm:text-base text-gray-600">Start splitting rent fairly with your roommates</p>
+            <h1 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">Join InRent</h1>
+            <p className="text-white/90 drop-shadow">Start splitting rent fairly with your roommates</p>
           </div>
 
-          <Card className="shadow-xl border-0">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-xl sm:text-2xl text-center">Create Account</CardTitle>
-              <CardDescription className="text-center text-sm sm:text-base">
+          <Card className="backdrop-blur-md bg-white/90 shadow-2xl border-0 rounded-3xl">
+            <CardHeader className="space-y-1 pb-4">
+              <CardTitle className="text-2xl text-center text-gray-800">Create Account</CardTitle>
+              <CardDescription className="text-center text-gray-600">
                 Set up your free account to get started
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5 px-8 pb-8">
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm sm:text-base">Full Name</Label>
+                  <Label htmlFor="name" className="text-gray-700 font-medium">Full Name</Label>
                   <Input
                     id="name"
                     type="text"
@@ -116,12 +127,12 @@ const Register = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="h-11 text-sm sm:text-base"
+                    className="h-12 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white/80"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
+                  <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -129,12 +140,12 @@ const Register = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-11 text-sm sm:text-base"
+                    className="h-12 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white/80"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
+                  <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
                   <Input
                     id="password"
                     type="password"
@@ -143,12 +154,12 @@ const Register = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="h-11 text-sm sm:text-base"
+                    className="h-12 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white/80"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm sm:text-base">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">Confirm Password</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -156,33 +167,42 @@ const Register = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    className="h-11 text-sm sm:text-base"
+                    className="h-12 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white/80"
                   />
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-sm sm:text-base touch-manipulation"
+                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 rounded-xl text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 mt-6"
                   disabled={loading}
                 >
                   {loading ? "Creating Account..." : "Create Account"}
                 </Button>
               </form>
 
-              <div className="text-center">
-                <p className="text-xs sm:text-sm text-gray-600">
+              <div className="text-center space-y-4">
+                <p className="text-sm text-gray-600">
                   Already have an account?{" "}
-                  <Link to="/login" className="text-blue-600 hover:underline font-medium">
+                  <Link to="/login" className="text-blue-600 hover:text-blue-800 font-semibold hover:underline">
                     Sign in
                   </Link>
                 </p>
+                
+                <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                  <Link to="/privacy" className="text-xs text-gray-500 hover:text-gray-700 hover:underline">
+                    Privacy Policy
+                  </Link>
+                  <Link to="/terms" className="text-xs text-gray-500 hover:text-gray-700 hover:underline">
+                    Terms of Service
+                  </Link>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <div className="text-center mt-6 text-xs sm:text-sm text-gray-500">
-            <p>By creating an account, you're joining our community-driven mission</p>
-            <p>to make rent splitting fair and transparent for everyone.</p>
+          <div className="text-center mt-6 text-sm text-white/80 drop-shadow">
+            <p>By creating an account, you're joining our mission</p>
+            <p>to make rent splitting fair and transparent.</p>
           </div>
         </div>
       </div>
