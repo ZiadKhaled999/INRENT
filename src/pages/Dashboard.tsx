@@ -22,25 +22,38 @@ const Dashboard = () => {
   }, [user, authLoading]);
 
   const fetchUserProfile = async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
-        .single();
+        .eq('id', user.id)
+        .maybeSingle();
 
       if (error) throw error;
+
+      if (!data) {
+        // Profile doesn't exist, redirect to role selection
+        navigate('/role-selection');
+        return;
+      }
 
       setUserProfile(data);
 
       // If user hasn't selected a role yet, redirect to role selection
-      if (!data?.user_type) {
+      if (!data.user_type) {
         navigate('/role-selection');
         return;
       }
 
     } catch (error: any) {
       console.error('Error fetching user profile:', error);
+      // On error, still redirect to role selection as fallback
+      navigate('/role-selection');
     } finally {
       setLoading(false);
     }

@@ -60,9 +60,11 @@ const ResidentDashboard = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    // Subscribe to household deletions
+    let isSubscribed = true;
+
+    // Subscribe to household deletions with better error handling
     const householdChannel = supabase
-      .channel('household-changes')
+      .channel(`household-changes-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -71,9 +73,11 @@ const ResidentDashboard = () => {
           table: 'households'
         },
         (payload) => {
+          if (!isSubscribed) return;
+          
           console.log('Household deleted:', payload);
           // Remove the deleted household from memberData
-          setMemberData(prev => prev.filter(member => member.household_id !== payload.old.id));
+          setMemberData(prev => prev.filter(member => member.household_id !== payload.old?.id));
           
           toast({
             title: "Household removed",
@@ -90,9 +94,11 @@ const ResidentDashboard = () => {
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
+          if (!isSubscribed) return;
+          
           console.log('Member removed:', payload);
           // Remove the member from memberData
-          setMemberData(prev => prev.filter(member => member.id !== payload.old.id));
+          setMemberData(prev => prev.filter(member => member.id !== payload.old?.id));
           
           toast({
             title: "Removed from household",
@@ -103,23 +109,32 @@ const ResidentDashboard = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
           table: 'household_members',
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Member data changed:', payload);
+          if (!isSubscribed) return;
+          
+          console.log('Member data updated:', payload);
           toast({
             title: "Household Updated",
             description: "Your household information has been updated.",
           });
-          fetchResidentData();
+          
+          // Debounce the refresh to avoid excessive API calls
+          setTimeout(() => {
+            if (isSubscribed) {
+              fetchResidentData();
+            }
+          }, 1000);
         }
       )
       .subscribe();
 
     return () => {
+      isSubscribed = false;
       supabase.removeChannel(householdChannel);
     };
   }, [user?.id, toast]);
@@ -132,12 +147,20 @@ const ResidentDashboard = () => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setUserProfile(data);
+      
+      if (data) {
+        setUserProfile(data);
+      }
     } catch (error: any) {
       console.error('Error fetching user profile:', error);
+      toast({
+        title: "Profile Error",
+        description: "Failed to load user profile. Please refresh the page.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -147,62 +170,70 @@ const ResidentDashboard = () => {
     try {
       console.log('Fetching resident data for user:', user.id);
       
-      // Fetch household memberships
-      const { data: members, error: membersError } = await supabase
-        .from('household_members')
-        .select(`
-          id,
-          household_id,
-          display_name,
-          email,
-          role,
-          household:households (
+      // Use Promise.all for parallel queries to improve performance
+      const [membersResult, paymentsResult] = await Promise.all([
+        // Fetch household memberships
+        supabase
+          .from('household_members')
+          .select(`
             id,
-            name,
-            rent_amount,
-            due_day
-          )
-        `)
-        .eq('user_id', user.id);
+            household_id,
+            display_name,
+            email,
+            role,
+            household:households (
+              id,
+              name,
+              rent_amount,
+              due_day
+            )
+          `)
+          .eq('user_id', user.id),
+        
+        // Fetch recent payments/bill splits
+        supabase
+          .from('bill_splits')
+          .select(`
+            id,
+            amount,
+            status,
+            paid_at,
+            bill:bills (
+              month_year,
+              due_date,
+              household:households (
+                name
+              )
+            )
+          `)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5)
+      ]);
 
-      if (membersError) throw membersError;
+      if (membersResult.error) {
+        console.error('Error fetching members:', membersResult.error);
+        throw membersResult.error;
+      }
 
-      console.log('Member data:', members);
+      if (paymentsResult.error) {
+        console.error('Error fetching payments:', paymentsResult.error);
+        throw paymentsResult.error;
+      }
+
+      console.log('Member data:', membersResult.data);
+      console.log('Payments data:', paymentsResult.data);
       
       // Filter out any members where household is null (deleted households)
-      const validMembers = (members || []).filter(member => member.household !== null);
+      const validMembers = (membersResult.data || []).filter(member => member.household !== null);
       setMemberData(validMembers);
-
-      // Fetch recent payments/bill splits
-      const { data: billSplits, error: paymentsError } = await supabase
-        .from('bill_splits')
-        .select(`
-          id,
-          amount,
-          status,
-          paid_at,
-          bill:bills (
-            month_year,
-            due_date,
-            household:households (
-              name
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (paymentsError) throw paymentsError;
-
-      console.log('Payments data:', billSplits);
-      setPayments(billSplits || []);
+      setPayments(paymentsResult.data || []);
 
     } catch (error: any) {
       console.error('Error fetching resident data:', error);
       toast({
         title: "Error loading data",
-        description: error.message,
+        description: "Failed to load dashboard data. Please refresh the page to try again.",
         variant: "destructive",
       });
     } finally {

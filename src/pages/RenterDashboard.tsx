@@ -58,12 +58,20 @@ const RenterDashboard = () => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setUserProfile(data);
+      
+      if (data) {
+        setUserProfile(data);
+      }
     } catch (error: any) {
       console.error('Error fetching user profile:', error);
+      toast({
+        title: "Profile Error",
+        description: "Failed to load user profile. Please refresh the page.",
+        variant: "destructive",
+      });
     }
   };
 
