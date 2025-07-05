@@ -662,15 +662,6 @@ const Index = () => {
                       Dashboard
                     </button>
                   </li>
-                  <li>
-                    <button 
-                      onClick={() => navigate('/settings')}
-                      className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
-                    >
-                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                      Settings
-                    </button>
-                  </li>
                 </ul>
               </div>
 
@@ -679,49 +670,49 @@ const Index = () => {
                 <h3 className="text-xl font-bold text-white mb-6">Other Links</h3>
                 <ul className="space-y-3">
                   <li>
-                    <a 
-                      href="#privacy"
+                    <button 
+                      onClick={() => navigate('/privacy')}
                       className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
                     >
                       <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                       Privacy Policy
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a 
-                      href="#terms"
+                    <button 
+                      onClick={() => navigate('/terms')}
                       className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
                     >
                       <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                       Terms & Conditions
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a 
-                      href="#security"
+                    <button 
+                      onClick={() => navigate('/security')}
                       className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
                     >
                       <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                       Security
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a 
-                      href="#support"
+                    <button 
+                      onClick={() => navigate('/support')}
                       className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
                     >
                       <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                       Support
-                    </a>
+                    </button>
                   </li>
                   <li>
-                    <a 
-                      href="#faq"
+                    <button 
+                      onClick={() => navigate('/faq')}
                       className="text-green-200 hover:text-white hover:translate-x-2 transition-all duration-300 text-sm flex items-center group"
                     >
                       <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                       FAQ
-                    </a>
+                    </button>
                   </li>
                 </ul>
               </div>
@@ -736,10 +727,10 @@ const Index = () => {
                     </div>
                     <div>
                       <p className="text-green-200 text-sm group-hover:text-white transition-colors duration-300">
-                        support@rentable.app
+                        support@inrent.app
                       </p>
                       <p className="text-green-300 text-xs group-hover:text-green-100 transition-colors duration-300">
-                        hello@rentable.app
+                        hello@inrent.app
                       </p>
                     </div>
                   </div>
