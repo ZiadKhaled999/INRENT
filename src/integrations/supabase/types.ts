@@ -318,6 +318,9 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           email: string | null
+          email_verification_expires_at: string | null
+          email_verification_token: string | null
+          email_verified: boolean | null
           full_name: string | null
           id: string
           phone_number: string | null
@@ -331,6 +334,9 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
+          email_verification_expires_at?: string | null
+          email_verification_token?: string | null
+          email_verified?: boolean | null
           full_name?: string | null
           id: string
           phone_number?: string | null
@@ -344,6 +350,9 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
+          email_verification_expires_at?: string | null
+          email_verification_token?: string | null
+          email_verified?: boolean | null
           full_name?: string | null
           id?: string
           phone_number?: string | null
@@ -412,6 +421,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_expired_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       end_rent_period: {
         Args: { target_household_id: string; target_month_year: string }
         Returns: Json
@@ -458,6 +471,10 @@ export type Database = {
       }
       validate_invitation_token: {
         Args: { invitation_token: string }
+        Returns: Json
+      }
+      verify_user_email: {
+        Args: { verification_token: string }
         Returns: Json
       }
     }
