@@ -51,7 +51,7 @@ const RoleSelection = () => {
         {/* Logo Header */}
         <div className="text-center mb-8 flex flex-col items-center">
           <AppLogoWithBg size={80} className="mb-3" />
-          <span className="text-2xl font-bold text-gray-900 mt-1">Rentable</span>
+          <span className="text-2xl font-bold text-gray-900 mt-1">InRent</span>
         </div>
         {/* Header */}
         <div className="text-center mb-8">

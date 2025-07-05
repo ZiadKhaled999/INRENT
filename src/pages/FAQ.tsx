@@ -100,7 +100,7 @@ const FAQ = () => {
         },
         {
           question: "The app isn't working properly",
-          answer: "Try refreshing your browser or logging out and back in. If problems persist, contact our support team at support@inrent.app."
+          answer: "Try restarting the app or logging out and back in. If problems persist, contact our support team at support@inrent.app."
         },
         {
           question: "How do I report a bug?",

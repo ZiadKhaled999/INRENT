@@ -8,8 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Mail, User, Eye, EyeOff, Lock } from "lucide-react";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
 import EmailVerificationAlert from "@/components/EmailVerificationAlert";
+import SplashScreen from "@/components/SplashScreen";
 
 const Landing = () => {
+  const [showSplash, setShowSplash] = useState(true);
   const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -23,6 +25,10 @@ const Landing = () => {
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -128,6 +134,10 @@ const Landing = () => {
     setIsSignUp(false);
   };
 
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
   return (
     <>
       <div 
@@ -148,7 +158,13 @@ const Landing = () => {
         />
         
         <div className="w-full max-w-sm mx-auto relative z-10">
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
+          <div 
+            className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border-2 border-emerald-200/30 relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(145deg, rgba(255,255,255,0.95), rgba(240,253,250,0.95))',
+              backgroundBlendMode: 'overlay'
+            }}
+          >
             {/* Logo and Brand */}
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
@@ -178,7 +194,7 @@ const Landing = () => {
                     value={formData.fullName}
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
                     required
-                    className="pl-12 h-14 rounded-full bg-emerald-100/50 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
+                    className="pl-12 h-14 rounded-full bg-emerald-50/70 border-2 border-emerald-200/50 focus:border-emerald-400 focus:ring-emerald-400"
                   />
                 </div>
               )}
@@ -191,7 +207,7 @@ const Landing = () => {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   required
-                  className="pl-12 h-14 rounded-full bg-emerald-100/50 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
+                  className="pl-12 h-14 rounded-full bg-emerald-50/70 border-2 border-emerald-200/50 focus:border-emerald-400 focus:ring-emerald-400"
                 />
               </div>
 
@@ -204,7 +220,7 @@ const Landing = () => {
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   required
                   minLength={6}
-                  className="pl-12 pr-12 h-14 rounded-full bg-emerald-100/50 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
+                  className="pl-12 pr-12 h-14 rounded-full bg-emerald-50/70 border-2 border-emerald-200/50 focus:border-emerald-400 focus:ring-emerald-400"
                 />
                 <button
                   type="button"
@@ -224,7 +240,7 @@ const Landing = () => {
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                     required
-                    className="pl-12 pr-12 h-14 rounded-full bg-emerald-100/50 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
+                    className="pl-12 pr-12 h-14 rounded-full bg-emerald-50/70 border-2 border-emerald-200/50 focus:border-emerald-400 focus:ring-emerald-400"
                   />
                   <button
                     type="button"

@@ -228,7 +228,7 @@ const JoinHousehold = () => {
           </CardHeader>
           <CardContent className="text-center">
             <Button onClick={() => navigate('/')} variant="outline" className="w-full">
-              Go to Rentable
+              Go to InRent
             </Button>
             <p className="text-sm text-gray-500 mt-4">
               Need a valid invite link? Ask your renter to share the correct household invitation link.

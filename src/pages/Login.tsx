@@ -57,16 +57,16 @@ const Login = () => {
       className="min-h-screen flex items-center justify-center p-4 relative bg-gray-100"
     >
       <div className="w-full max-w-sm mx-auto relative z-10">
-        <div 
-          className="rounded-3xl shadow-2xl p-8 border border-white/20 relative overflow-hidden"
-          style={{
-            backgroundImage: `url(/lovable-uploads/67ca151f-1f97-495d-9839-9326856d388b.png)`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        >
-          {/* Overlay for better readability */}
-          <div className="absolute inset-0 bg-white/85 backdrop-blur-sm rounded-3xl"></div>
+          <div 
+            className="rounded-3xl shadow-2xl p-8 border-2 border-emerald-200/30 relative overflow-hidden"
+            style={{
+              backgroundImage: `url(/lovable-uploads/67ca151f-1f97-495d-9839-9326856d388b.png)`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          >
+            {/* Overlay for better readability */}
+            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-3xl"></div>
           
           <div className="relative z-10">
             {/* Logo and Brand */}

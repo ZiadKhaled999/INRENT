@@ -116,7 +116,7 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Mobile-friendly scrollbars */
+/* Mobile-friendly scrollbars */
   .scrollbar-thin {
     scrollbar-width: thin;
   }
@@ -148,6 +148,34 @@
   /* Mobile-friendly focus states */
   .focus-mobile {
     @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+  }
+
+  /* Splash screen animations */
+  @keyframes logoScale {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+  }
+  
+  @keyframes scaleOut {
+    from { transform: scale(1); opacity: 1; }
+    to { transform: scale(0.8); opacity: 0; }
   }
 }
 

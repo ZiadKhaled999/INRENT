@@ -39,7 +39,7 @@ const EmailVerificationAlert = ({ email, onClose }: EmailVerificationAlertProps)
             <Mail className="h-4 w-4 text-amber-600" />
             <AlertTitle className="text-amber-800">Please verify your email</AlertTitle>
             <AlertDescription className="text-amber-700">
-              Check your inbox and click the verification link to activate your account and start using Rentable.
+              Check your inbox and click the verification link to activate your account and start using InRent.
             </AlertDescription>
           </Alert>
           

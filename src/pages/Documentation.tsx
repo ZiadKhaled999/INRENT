@@ -272,7 +272,7 @@ const Documentation = () => {
               <AppLogoWithBg size={40} />
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-700 to-green-700 bg-clip-text text-transparent">
-                  Rentable Documentation
+                  InRent Documentation
                 </h1>
                 <p className="text-xs sm:text-sm text-gray-600">Complete guide to mastering rent management</p>
               </div>
@@ -305,7 +305,7 @@ const Documentation = () => {
                 From Zero to Hero in 4 Simple Steps
               </h2>
               <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-                Follow this comprehensive guide to become a Rentable expert in minutes
+                Follow this comprehensive guide to become an InRent expert in minutes
               </p>
             </div>
 
@@ -438,7 +438,7 @@ const Documentation = () => {
                 Powerful Features for Rent Management
               </h2>
               <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-                Discover all the tools that make Rentable the best choice for rent splitting
+                Discover all the tools that make InRent the best choice for rent splitting
               </p>
             </div>
 
@@ -480,7 +480,7 @@ const Documentation = () => {
           <TabsContent value="new-features" className="space-y-6 sm:space-y-8">
             <div className="text-center mb-8 sm:mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                What's New in Rentable
+                What's New in InRent
               </h2>
               <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
                 Latest features and improvements to enhance your rent management experience
@@ -513,7 +513,7 @@ const Documentation = () => {
                 <Star className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">More Features Coming Soon!</h3>
                 <p className="text-gray-700 mb-6 text-sm sm:text-base">
-                  We're constantly working to improve Rentable. Have a feature request? Send us feedback through the app!
+                  We're constantly working to improve InRent. Have a feature request? Send us feedback through the app!
                 </p>
                 <Button 
                   onClick={() => navigate('/register')}
@@ -532,7 +532,7 @@ const Documentation = () => {
                 Common Workflows & Scenarios
               </h2>
               <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-                Real-world examples of how to use Rentable effectively
+                Real-world examples of how to use InRent effectively
               </p>
             </div>
 
@@ -623,7 +623,7 @@ const Documentation = () => {
                 Frequently Asked Questions
               </h2>
               <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-                Get answers to common questions about using Rentable
+                Get answers to common questions about using InRent
               </p>
             </div>
 
@@ -645,7 +645,7 @@ const Documentation = () => {
                 <CardContent className="p-6 sm:p-8">
                   <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Ready to Get Started?</h3>
                   <p className="text-sm sm:text-base text-gray-700 mb-6">
-                    Now that you're a Rentable expert, it's time to create your account and start managing rent like a pro!
+                    Now that you're an InRent expert, it's time to create your account and start managing rent like a pro!
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                     <Button 

@@ -38,7 +38,7 @@ const InviteLink = ({ householdId, householdName, inviteToken }: InviteLinkProps
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Join ${householdName} on Rentable`,
+          title: `Join ${householdName} on InRent`,
           text: `You've been invited to join ${householdName} for rent splitting!`,
           url: inviteUrl,
         });

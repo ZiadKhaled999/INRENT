@@ -118,22 +118,13 @@ const DownloadPage = () => {
           <Card className="bg-gray-50 border-gray-200">
             <CardContent className="p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">System Requirements</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 gap-8">
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-3">Mobile</h4>
                   <ul className="space-y-2 text-gray-600">
                     <li>• iOS 12.0 or later</li>
                     <li>• Android 7.0 or later</li>
                     <li>• 50MB free storage</li>
-                    <li>• Internet connection required</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Web</h4>
-                  <ul className="space-y-2 text-gray-600">
-                    <li>• Modern web browser</li>
-                    <li>• Chrome, Firefox, Safari, Edge</li>
-                    <li>• JavaScript enabled</li>
                     <li>• Internet connection required</li>
                   </ul>
                 </div>

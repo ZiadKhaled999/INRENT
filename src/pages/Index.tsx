@@ -198,13 +198,6 @@ const Index = () => {
 
               <div className="hidden md:flex items-center space-x-3">
                 <Button 
-                  variant="ghost" 
-                  onClick={() => navigate('/landing')}
-                  className="text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 font-medium transition-all duration-300"
-                >
-                  Sign In
-                </Button>
-                <Button 
                   onClick={() => navigate('/download')}
                   className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium px-6 shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                 >
@@ -234,13 +227,6 @@ const Index = () => {
                   </button>
                   <a href="#mission" className="block text-slate-700 hover:text-emerald-600 font-medium py-2 transition-colors">Mission</a>
                   <div className="flex flex-col space-y-3 pt-4 border-t border-emerald-200">
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => navigate('/landing')}
-                      className="justify-start text-slate-700 hover:bg-emerald-50"
-                    >
-                      Sign In
-                    </Button>
                     <Button 
                       onClick={() => navigate('/download')}
                       className="bg-gradient-to-r from-emerald-600 to-green-600 text-white"
