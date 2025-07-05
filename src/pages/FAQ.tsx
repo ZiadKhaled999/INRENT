@@ -15,8 +15,8 @@ const FAQ = () => {
           answer: "Simply click 'Sign Up' on our homepage, enter your email and create a password. You'll receive a verification email to activate your account."
         },
         {
-          question: "Is InRent really free?",
-          answer: "Yes! InRent is completely free to use. We don't charge any fees for creating households, splitting rent, or tracking payments."
+          question: "What are InRent's pricing plans?",
+          answer: "InRent operates on a SaaS model with flexible pricing plans. We offer a free tier for basic household management, and premium plans with advanced features for larger households and property managers."
         },
         {
           question: "How do I create my first household?",

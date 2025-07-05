@@ -1,13 +1,42 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, Smartphone, Monitor, Shield, Star, Users } from "lucide-react";
+import { Download, Smartphone, Monitor, Shield, Star, Users, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
+import { DownloadCounter } from "@/utils/downloadCounter";
 
 const DownloadPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [downloadCount, setDownloadCount] = useState<string>('0');
+
+  useEffect(() => {
+    setDownloadCount(DownloadCounter.getFormattedCount());
+  }, []);
+
+  const handleDownload = async (type: 'apk' | 'ios' | 'android', url: string) => {
+    if (type === 'ios' || type === 'android') {
+      toast({
+        title: "Coming Soon!",
+        description: `${type === 'ios' ? 'App Store' : 'Google Play'} version is not available yet. Stay tuned!`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // For APK download
+    const counted = await DownloadCounter.trackDownload(type, url);
+    if (counted) {
+      setDownloadCount(DownloadCounter.getFormattedCount());
+      toast({
+        title: "Download Started!",
+        description: "InRent APK download has begun. Thank you!",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50">
@@ -44,8 +73,16 @@ const DownloadPage = () => {
           </p>
         </div>
 
+        {/* Download Counter */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 bg-emerald-100 px-4 py-2 rounded-full">
+            <Download className="w-4 h-4 text-emerald-600" />
+            <span className="text-emerald-800 font-medium">{downloadCount} downloads</span>
+          </div>
+        </div>
+
         {/* Download Options */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
           <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-gray-600 to-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -57,9 +94,15 @@ const DownloadPage = () => {
               <p className="text-gray-600 mb-6">
                 Get InRent on your iPhone or iPad from the App Store
               </p>
-              <Button className="w-full h-12 bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-black text-white">
-                <Download className="w-5 h-5 mr-2" />
+              <Button 
+                className="w-full h-12 bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-black text-white relative"
+                onClick={() => handleDownload('ios', '#')}
+              >
+                <Clock className="w-5 h-5 mr-2" />
                 App Store
+                <span className="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs px-2 py-1 rounded-full font-bold">
+                  Soon
+                </span>
               </Button>
             </CardContent>
           </Card>
@@ -75,9 +118,36 @@ const DownloadPage = () => {
               <p className="text-gray-600 mb-6">
                 Get InRent on your Android device from Google Play Store
               </p>
-              <Button className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white">
-                <Download className="w-5 h-5 mr-2" />
+              <Button 
+                className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white relative"
+                onClick={() => handleDownload('android', '#')}
+              >
+                <Clock className="w-5 h-5 mr-2" />
                 Google Play
+                <span className="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs px-2 py-1 rounded-full font-bold">
+                  Soon
+                </span>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Download APK</h3>
+              <p className="text-gray-600 mb-6">
+                Get the Android APK file directly for manual installation
+              </p>
+              <Button 
+                className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white"
+                onClick={() => handleDownload('apk', '/lovable-uploads/inrent.apk')}
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Download APK
               </Button>
             </CardContent>
           </Card>

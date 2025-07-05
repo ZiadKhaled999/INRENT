@@ -55,7 +55,7 @@ const translations: Translations = {
   
   // Warning Banner
   headsUp: { en: '🎉 Heads up!', ar: '🎉 انتبه!', es: '🎉 ¡Atención!' },
-  freeApp: { en: 'This app is completely free—for now! We\'re in our startup phase and loving every caffeinated moment. Enjoy all features while we perfect this magic! ✨', ar: 'هذا التطبيق مجاني تماماً - في الوقت الحالي! نحن في مرحلة الشركة الناشئة ونحب كل لحظة مليئة بالكافيين. استمتع بجميع الميزات بينما نحن نكمل هذا السحر! ✨', es: 'Esta aplicación es completamente gratis—¡por ahora! Estamos en nuestra fase de startup y amamos cada momento lleno de cafeína. ¡Disfruta todas las funciones mientras perfeccionamos esta magia! ✨' },
+  freeApp: { en: 'InRent is a SaaS platform with flexible pricing plans. Start with our free tier and upgrade as your household management needs grow! ✨', ar: 'إنرنت هو منصة SaaS مع خطط تسعير مرنة. ابدأ بالطبقة المجانية وقم بالترقية مع نمو احتياجات إدارة أسرتك! ✨', es: 'InRent es una plataforma SaaS con planes de precios flexibles. ¡Comienza con nuestro nivel gratuito y actualiza según crezcan tus necesidades de gestión del hogar! ✨' },
   
   // Buttons
   sendFeedback: { en: 'Send Feedback 🚀', ar: 'إرسال التعليقات 🚀', es: 'Enviar Comentarios 🚀' },

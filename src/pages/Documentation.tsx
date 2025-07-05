@@ -228,41 +228,6 @@ const Documentation = () => {
     }
   ];
 
-  const faqs = [
-    {
-      question: "How do I create a household?",
-      answer: "As a renter, go to your dashboard and click 'Create Household'. Enter the household name, monthly rent amount, and due date. You'll then receive invitation links to share with your residents."
-    },
-    {
-      question: "How do residents mark their payments?",
-      answer: "Residents can mark their payments as 'Paid' or 'Pending' directly from their dashboard or the household detail page. This updates in real-time for all household members."
-    },
-    {
-      question: "How do residents join my household?",
-      answer: "Share the invitation link from your dashboard with your residents. They'll click the link, create an account (if needed), and join your household automatically."
-    },
-    {
-      question: "Can I manage multiple properties?",
-      answer: "Yes! Renters can create and manage multiple households, each with different residents and rent amounts."
-    },
-    {
-      question: "How do I change the app language or theme?",
-      answer: "Access the Settings page from your dashboard to switch between English, Arabic, and Spanish, or choose from Light, Dark, or Mid-Coffee Crash themes."
-    },
-    {
-      question: "How do I send feedback or report bugs?",
-      answer: "Use the integrated feedback system in the Settings page. You can send feedback or bug reports directly via email from within the app."
-    },
-    {
-      question: "Is my financial information secure?",
-      answer: "Absolutely. We use bank-level encryption and never store payment methods. We only track payment status, not actual financial transactions."
-    },
-    {
-      question: "What if someone leaves the household?",
-      answer: "Residents can leave households from their dashboard, and renters can remove members. The system automatically adjusts future payment calculations."
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <header className="bg-white/95 backdrop-blur-xl border-b border-green-200/50 shadow-lg">
@@ -289,13 +254,12 @@ const Documentation = () => {
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Tabs defaultValue="getting-started" className="w-full">
           <div className="overflow-x-auto mb-6 sm:mb-8">
-            <TabsList className="grid w-full grid-cols-6 min-w-[600px] sm:min-w-0">
+            <TabsList className="grid w-full grid-cols-5 min-w-[500px] sm:min-w-0">
               <TabsTrigger value="getting-started" className="text-xs sm:text-sm">Getting Started</TabsTrigger>
               <TabsTrigger value="user-roles" className="text-xs sm:text-sm">User Roles</TabsTrigger>
               <TabsTrigger value="features" className="text-xs sm:text-sm">Features</TabsTrigger>
               <TabsTrigger value="new-features" className="text-xs sm:text-sm">What's New</TabsTrigger>
               <TabsTrigger value="workflows" className="text-xs sm:text-sm">Workflows</TabsTrigger>
-              <TabsTrigger value="faq" className="text-xs sm:text-sm">FAQ</TabsTrigger>
             </TabsList>
           </div>
 
@@ -611,54 +575,6 @@ const Documentation = () => {
                         <p className="text-xs sm:text-sm text-gray-600">Receive reminders and track payment history</p>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="faq" className="space-y-6 sm:space-y-8">
-            <div className="text-center mb-8 sm:mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Frequently Asked Questions
-              </h2>
-              <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-                Get answers to common questions about using InRent
-              </p>
-            </div>
-
-            <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
-              {faqs.map((faq, index) => (
-                <Card key={index}>
-                  <CardHeader>
-                    <CardTitle className="text-base sm:text-lg text-left">{faq.question}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm sm:text-base text-gray-700">{faq.answer}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <div className="text-center mt-8 sm:mt-12">
-              <Card className="max-w-2xl mx-auto bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-                <CardContent className="p-6 sm:p-8">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Ready to Get Started?</h3>
-                  <p className="text-sm sm:text-base text-gray-700 mb-6">
-                    Now that you're an InRent expert, it's time to create your account and start managing rent like a pro!
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-                    <Button 
-                      size="lg"
-                      onClick={() => navigate('/register')}
-                      className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 w-full sm:w-auto"
-                    >
-                      Create Your Account
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                    <Button variant="outline" size="lg" onClick={() => navigate('/')} className="w-full sm:w-auto">
-                      Back to Homepage
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
