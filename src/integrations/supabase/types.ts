@@ -286,6 +286,69 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string
+          household_id: string
+          id: string
+          method: string | null
+          paid_at: string | null
+          payment_token: string | null
+          paymob_order_id: string | null
+          resident_id: string
+          status: string
+          tx_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          due_date: string
+          household_id: string
+          id?: string
+          method?: string | null
+          paid_at?: string | null
+          payment_token?: string | null
+          paymob_order_id?: string | null
+          resident_id: string
+          status?: string
+          tx_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string
+          household_id?: string
+          id?: string
+          method?: string | null
+          paid_at?: string | null
+          payment_token?: string | null
+          paymob_order_id?: string | null
+          resident_id?: string
+          status?: string
+          tx_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_resident_id_fkey"
+            columns: ["resident_id"]
+            isOneToOne: false
+            referencedRelation: "household_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phone_verification_attempts: {
         Row: {
           attempts_count: number | null
@@ -323,6 +386,8 @@ export type Database = {
           email_verified: boolean | null
           full_name: string | null
           id: string
+          payment_pin_created_at: string | null
+          payment_pin_hash: string | null
           phone_number: string | null
           phone_verification_code: string | null
           phone_verification_expires_at: string | null
@@ -339,6 +404,8 @@ export type Database = {
           email_verified?: boolean | null
           full_name?: string | null
           id: string
+          payment_pin_created_at?: string | null
+          payment_pin_hash?: string | null
           phone_number?: string | null
           phone_verification_code?: string | null
           phone_verification_expires_at?: string | null
@@ -355,6 +422,8 @@ export type Database = {
           email_verified?: boolean | null
           full_name?: string | null
           id?: string
+          payment_pin_created_at?: string | null
+          payment_pin_hash?: string | null
           phone_number?: string | null
           phone_verification_code?: string | null
           phone_verification_expires_at?: string | null
@@ -425,6 +494,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      create_household_payments: {
+        Args: {
+          target_household_id: string
+          target_due_date: string
+          target_amount: number
+        }
+        Returns: Json
+      }
       end_rent_period: {
         Args: { target_household_id: string; target_month_year: string }
         Returns: Json
@@ -459,6 +536,10 @@ export type Database = {
       }
       record_phone_verification_attempt: {
         Args: { phone: string }
+        Returns: undefined
+      }
+      update_overdue_payments: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       use_invitation_token: {
