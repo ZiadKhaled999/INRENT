@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { User, Plus } from "lucide-react";
+import { User, Plus, CreditCard } from "lucide-react";
 import NotificationCenter from "@/components/NotificationCenter";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
 import UserProfile from '@/components/UserProfile';
@@ -74,6 +74,10 @@ const RenterDashboardHeader = ({ userProfile }: RenterDashboardHeaderProps) => {
                         <Button onClick={() => navigate('/create-household')} size="sm">
                             <Plus className="w-4 h-4 mr-1" />
                             New Property
+                        </Button>
+                        <Button onClick={() => navigate('/payments')} variant="outline" size="sm">
+                            <CreditCard className="w-4 h-4 mr-1" />
+                            Payments
                         </Button>
                         <ProfileDisplay />
                         <NotificationCenter />

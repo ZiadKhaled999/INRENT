@@ -25,6 +25,7 @@ import Security from "./pages/Security";
 import Support from "./pages/Support";
 import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
+import PaymentsDashboard from "./pages/PaymentsDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -71,6 +72,11 @@ const App: React.FC = () => {
                 <Route path="/household/:id" element={
                   <ProtectedRoute>
                     <HouseholdDetail />
+                  </ProtectedRoute>
+                } />
+                <Route path="/payments" element={
+                  <ProtectedRoute>
+                    <PaymentsDashboard />
                   </ProtectedRoute>
                 } />
                 <Route path="*" element={<NotFound />} />

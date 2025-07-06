@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, CreditCard } from "lucide-react";
 import NotificationCenter from "@/components/NotificationCenter";
 import AppLogoWithBg from "@/components/AppLogoWithBg";
 import UserProfile from '@/components/UserProfile';
@@ -74,8 +74,11 @@ const DashboardHeader = ({ userProfile }: DashboardHeaderProps) => {
             </div>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-end">
+            <Button onClick={() => navigate('/payments')} variant="outline" size="sm">
+              <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+              <span className="hidden xs:inline">Payments</span>
+            </Button>
             <ProfileDisplay />
-            <NotificationCenter />
             <Button
               onClick={handleSignOut}
               variant="destructive"
