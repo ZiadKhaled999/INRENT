@@ -57,18 +57,23 @@ const PaymentManagement: React.FC<PaymentManagementProps> = ({ userProfile, onSi
       let query = supabase.from('households').select('*');
       
       if (userProfile.user_type === 'renter') {
-        // Renters see households they created
-        query = query.eq('created_by', userProfile.id);
+        // Renters see only ACTIVE households they created (not scheduled for deletion)
+        query = query
+          .eq('created_by', userProfile.id)
+          .eq('scheduled_for_deletion', false);
       } else {
-        // Residents see households they're members of
+        // Residents see only ACTIVE households they're members of
         const { data: memberData } = await supabase
           .from('household_members')
-          .select('household_id')
-          .eq('user_id', userProfile.id);
+          .select('household_id, households!inner(scheduled_for_deletion)')
+          .eq('user_id', userProfile.id)
+          .eq('households.scheduled_for_deletion', false);
         
         if (memberData && memberData.length > 0) {
           const householdIds = memberData.map(m => m.household_id);
-          query = query.in('id', householdIds);
+          query = query
+            .in('id', householdIds)
+            .eq('scheduled_for_deletion', false);
         } else {
           setHouseholds([]);
           setLoading(false);

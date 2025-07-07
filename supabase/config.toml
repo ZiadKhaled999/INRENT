@@ -73,3 +73,6 @@ port = 54321
 
 [functions.paymob-integration]
 verify_jwt = true
+
+[functions.payment-webhook]
+verify_jwt = false

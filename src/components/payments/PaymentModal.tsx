@@ -50,6 +50,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [residentInfo, setResidentInfo] = useState<any>(null);
   const [showPaymentIframe, setShowPaymentIframe] = useState(false);
   const [paymentToken, setPaymentToken] = useState<string | null>(null);
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -81,20 +82,19 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     try {
       // This would typically be done via an edge function to keep API keys secure
       // For now, showing the structure - you'd need to implement the edge function
-      const response = await supabase.functions.invoke('initiate-payment', {
+      const response = await supabase.functions.invoke('paymob-integration', {
         body: {
+          action: 'initiate_payment',
           paymentId: payment.id,
-          amount: payment.amount,
-          userEmail: residentInfo.email,
-          firstName: residentInfo.display_name.split(' ')[0] || 'User',
-          lastName: residentInfo.display_name.split(' ').slice(1).join(' ') || 'Name'
+          userId: user?.id
         }
       });
 
       if (response.error) throw response.error;
 
-      const { paymentToken: token } = response.data;
+      const { payment_token: token, iframe_url } = response.data;
       setPaymentToken(token);
+      setIframeUrl(iframe_url);
       setShowPaymentIframe(true);
 
       // Update payment with token
@@ -308,7 +308,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               <CardContent>
                 <div className="border rounded-lg overflow-hidden">
                   <iframe
-                    src={`https://accept.paymob.com/api/acceptance/iframes/[IFRAME_ID]?payment_token=${paymentToken}`}
+                    src={iframeUrl || `https://accept.paymob.com/api/acceptance/iframes/iframe_id?payment_token=${paymentToken}`}
                     width="100%"
                     height="400"
                     style={{ border: 'none' }}
@@ -341,16 +341,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               </Button>
             )}
 
-            {userType === 'renter' && payment.status !== 'paid' && (
-              <Button 
-                onClick={markAsPaid} 
-                disabled={loading}
-                variant="secondary"
-                className="flex-1"
-              >
-                {loading ? 'Updating...' : 'Mark as Paid'}
-              </Button>
-            )}
 
             {payment.status === 'paid' && payment.tx_id && (
               <Button variant="outline" className="flex-1 flex items-center gap-2">
