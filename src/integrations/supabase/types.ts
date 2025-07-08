@@ -354,33 +354,6 @@ export type Database = {
           },
         ]
       }
-      phone_verification_attempts: {
-        Row: {
-          attempts_count: number | null
-          blocked_until: string | null
-          created_at: string | null
-          id: string
-          last_attempt_at: string | null
-          phone_number: string
-        }
-        Insert: {
-          attempts_count?: number | null
-          blocked_until?: string | null
-          created_at?: string | null
-          id?: string
-          last_attempt_at?: string | null
-          phone_number: string
-        }
-        Update: {
-          attempts_count?: number | null
-          blocked_until?: string | null
-          created_at?: string | null
-          id?: string
-          last_attempt_at?: string | null
-          phone_number?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null

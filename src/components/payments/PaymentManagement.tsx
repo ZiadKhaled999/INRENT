@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import HouseholdPaymentView from "./HouseholdPaymentView";
 import PaymentExport from "./PaymentExport";
-import { LogOut, Home, CreditCard, Users, AlertCircle } from "lucide-react";
+import TransactionView from "./TransactionView";
+import { LogOut, Home, CreditCard, Users, AlertCircle, History } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -54,37 +55,46 @@ const PaymentManagement: React.FC<PaymentManagementProps> = ({ userProfile, onSi
 
   const fetchHouseholds = async () => {
     try {
-      let query = supabase.from('households').select('*');
-      
       if (userProfile.user_type === 'renter') {
-        // Renters see only ACTIVE households they created (not scheduled for deletion)
-        query = query
+        // Renters: Get households they created that are active
+        const { data, error } = await supabase
+          .from('households')
+          .select('*')
           .eq('created_by', userProfile.id)
-          .eq('scheduled_for_deletion', false);
+          .eq('scheduled_for_deletion', false)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setHouseholds(data || []);
       } else {
-        // Residents see only ACTIVE households they're members of
-        const { data: memberData } = await supabase
+        // Residents: Use same logic as main dashboard - fetch through household_members
+        const { data: memberData, error } = await supabase
           .from('household_members')
-          .select('household_id, households!inner(scheduled_for_deletion)')
+          .select(`
+            id,
+            household_id,
+            household:households!inner (
+              id,
+              name,
+              rent_amount,
+              due_day,
+              created_at,
+              scheduled_for_deletion
+            )
+          `)
           .eq('user_id', userProfile.id)
-          .eq('households.scheduled_for_deletion', false);
+          .eq('household.scheduled_for_deletion', false);
+
+        if (error) throw error;
         
-        if (memberData && memberData.length > 0) {
-          const householdIds = memberData.map(m => m.household_id);
-          query = query
-            .in('id', householdIds)
-            .eq('scheduled_for_deletion', false);
-        } else {
-          setHouseholds([]);
-          setLoading(false);
-          return;
-        }
+        // Extract households from member data, filtering out any null households
+        const activeHouseholds = (memberData || [])
+          .map(member => member.household)
+          .filter(household => household !== null)
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        setHouseholds(activeHouseholds);
       }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setHouseholds(data || []);
     } catch (error: any) {
       console.error('Error fetching households:', error);
       toast({
@@ -247,6 +257,10 @@ const PaymentManagement: React.FC<PaymentManagementProps> = ({ userProfile, onSi
                 <Home className="h-4 w-4" />
                 Households
               </TabsTrigger>
+              <TabsTrigger value="transactions" className="flex items-center gap-2">
+                <History className="h-4 w-4" />
+                Transactions
+              </TabsTrigger>
               {userProfile.user_type === 'renter' && (
                 <TabsTrigger value="export" className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4" />
@@ -295,6 +309,13 @@ const PaymentManagement: React.FC<PaymentManagementProps> = ({ userProfile, onSi
                   ))}
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="transactions" className="space-y-4">
+              <TransactionView 
+                userType={userProfile.user_type} 
+                userId={userProfile.id}
+              />
             </TabsContent>
 
             {userProfile.user_type === 'renter' && (

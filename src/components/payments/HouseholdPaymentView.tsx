@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import PaymentModal from "./PaymentModal";
-import { ArrowLeft, Plus, Send, FileText, CheckCircle, Clock, AlertCircle, X } from "lucide-react";
+import { ArrowLeft, Plus, FileText, CheckCircle, Clock, AlertCircle, X } from "lucide-react";
 
 interface Household {
   id: string;
@@ -37,6 +37,10 @@ interface Payment {
   tx_id: string | null;
   paymob_order_id: string | null;
   payment_token: string | null;
+  household_members: {
+    display_name: string;
+    email: string;
+  };
 }
 
 interface HouseholdPaymentViewProps {
@@ -53,7 +57,6 @@ const HouseholdPaymentView: React.FC<HouseholdPaymentViewProps> = ({ household, 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCreatePaymentOpen, setIsCreatePaymentOpen] = useState(false);
   const [newPaymentData, setNewPaymentData] = useState({
-    amount: household.rent_amount,
     dueDate: ''
   });
   const { toast } = useToast();
@@ -87,7 +90,10 @@ const HouseholdPaymentView: React.FC<HouseholdPaymentViewProps> = ({ household, 
     try {
       const { data, error } = await supabase
         .from('payments')
-        .select('*')
+        .select(`
+          *,
+          household_members!inner(display_name, email)
+        `)
         .eq('household_id', household.id)
         .order('due_date', { ascending: false });
 
@@ -105,73 +111,58 @@ const HouseholdPaymentView: React.FC<HouseholdPaymentViewProps> = ({ household, 
     }
   };
 
-  const handleCreatePayments = async () => {
-    if (!newPaymentData.dueDate) {
-      toast({
-        title: "Missing Information",
-        description: "Please select a due date.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const createPayments = async () => {
     try {
       const { data, error } = await supabase.rpc('create_household_payments', {
         target_household_id: household.id,
         target_due_date: newPaymentData.dueDate,
-        target_amount: newPaymentData.amount
+        target_amount: household.rent_amount // Always use the actual rent amount
       });
 
       if (error) throw error;
 
-      const result = data as { success: boolean; error?: string; message?: string };
-      
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Payment requests created for all household members.",
-        });
-        setIsCreatePaymentOpen(false);
-        fetchPayments();
-      } else {
-        throw new Error(result.error || 'Failed to create payments');
-      }
+      toast({
+        title: "Success",
+        description: "Monthly payments generated successfully for all residents.",
+      });
+
+      setIsCreatePaymentOpen(false);
+      setNewPaymentData({ dueDate: '' });
+      fetchPayments(); // Refresh the payments list
     } catch (error: any) {
       console.error('Error creating payments:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create payment requests.",
+        description: "Failed to generate payments. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  const sendReminder = async (memberId: string, memberEmail: string) => {
-    try {
-      // Create notification for the member
-      const { error } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: members.find(m => m.id === memberId)?.user_id,
-          type: 'payment_reminder',
-          title: 'Payment Reminder',
-          message: `Reminder: Your rent payment of ${formatCurrency(household.rent_amount / members.length)} for ${household.name} is due soon.`,
-          read: false
-        });
+  const getMemberName = (residentId: string) => {
+    const member = members.find(m => m.id === residentId);
+    return member ? member.display_name : 'Unknown';
+  };
 
-      if (error) throw error;
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'paid': return 'default';
+      case 'pending': return 'secondary';
+      case 'overdue': return 'destructive';
+      default: return 'outline';
+    }
+  };
 
-      toast({
-        title: "Reminder Sent",
-        description: `Payment reminder sent to ${memberEmail}`,
-      });
-    } catch (error: any) {
-      console.error('Error sending reminder:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send reminder.",
-        variant: "destructive",
-      });
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return <CheckCircle className="h-3 w-3 mr-1" />;
+      case 'pending':
+        return <Clock className="h-3 w-3 mr-1" />;
+      case 'overdue':
+        return <AlertCircle className="h-3 w-3 mr-1" />;
+      default:
+        return <X className="h-3 w-3 mr-1" />;
     }
   };
 
@@ -182,63 +173,12 @@ const HouseholdPaymentView: React.FC<HouseholdPaymentViewProps> = ({ household, 
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-600" />;
-      case 'overdue':
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
-      case 'failed':
-        return <X className="h-4 w-4 text-red-600" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-400" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      paid: 'bg-green-100 text-green-800',
-      pending: 'bg-yellow-100 text-yellow-800',
-      overdue: 'bg-red-100 text-red-800',
-      failed: 'bg-red-100 text-red-800'
-    };
-
-    return (
-      <Badge className={variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800'}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
-  };
-
-  const getMembersWithPayments = () => {
-    return members.map(member => {
-      const memberPayments = payments.filter(p => p.resident_id === member.id);
-      const latestPayment = memberPayments[0]; // Already sorted by due_date desc
-      
-      return {
-        ...member,
-        payment: latestPayment,
-        totalPaid: memberPayments.filter(p => p.status === 'paid').length
-      };
-    });
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg mx-auto mb-4 animate-pulse"></div>
-          <p className="text-gray-600">Loading payment details...</p>
+          <p className="text-gray-600">Loading payment data...</p>
         </div>
       </div>
     );
@@ -249,146 +189,178 @@ const HouseholdPaymentView: React.FC<HouseholdPaymentViewProps> = ({ household, 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
           <div>
-            <h2 className="text-2xl font-bold">{household.name}</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{household.name}</h2>
             <p className="text-gray-600">
-              Monthly Rent: {formatCurrency(household.rent_amount)} • Due: {household.due_day} of each month
+              Rent: {formatCurrency(household.rent_amount)} • Due: {household.due_day}th of each month
             </p>
           </div>
         </div>
 
-        {userType === 'renter' && (
-          <Dialog open={isCreatePaymentOpen} onOpenChange={setIsCreatePaymentOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Payment Request
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create Payment Request</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Total Amount</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    value={newPaymentData.amount}
-                    onChange={(e) => setNewPaymentData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                    step="0.01"
-                  />
+        <div className="flex items-center gap-2">
+          {/* Automatic payment generation for renters only */}
+          {userType === 'renter' && (
+            <Dialog open={isCreatePaymentOpen} onOpenChange={setIsCreatePaymentOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Generate Monthly Payments
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Generate Monthly Payments</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="dueDate">Due Date</Label>
+                    <Input
+                      id="dueDate"
+                      type="date"
+                      value={newPaymentData.dueDate}
+                      onChange={(e) => setNewPaymentData({
+                        ...newPaymentData,
+                        dueDate: e.target.value
+                      })}
+                    />
+                  </div>
+                  <div className="text-sm text-gray-600 p-4 bg-gray-50 rounded-lg">
+                    <p><strong>Total Rent:</strong> {formatCurrency(household.rent_amount)}</p>
+                    <p><strong>Members:</strong> {members.length}</p>
+                    <p><strong>Amount per member:</strong> {formatCurrency(household.rent_amount / Math.max(members.length, 1))}</p>
+                    <p className="text-xs mt-2 text-gray-500">
+                      This will create individual payment requests for each resident automatically.
+                    </p>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setIsCreatePaymentOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={createPayments} disabled={!newPaymentData.dueDate}>
+                      Generate Payments
+                    </Button>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dueDate">Due Date</Label>
-                  <Input
-                    id="dueDate"
-                    type="date"
-                    value={newPaymentData.dueDate}
-                    onChange={(e) => setNewPaymentData(prev => ({ ...prev, dueDate: e.target.value }))}
-                  />
-                </div>
-                <div className="text-sm text-gray-600">
-                  This will create individual payment requests of {formatCurrency(newPaymentData.amount / members.length)} for each of the {members.length} household members.
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1" onClick={() => setIsCreatePaymentOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button className="flex-1" onClick={handleCreatePayments}>
-                    Create Payments
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
-      {/* Members and Payments Table */}
+      {/* Stats Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Collected</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + Number(p.amount), 0))}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Pending</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">
+              {formatCurrency(payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + Number(p.amount), 0))}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Overdue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {formatCurrency(payments.filter(p => p.status === 'overdue').reduce((sum, p) => sum + Number(p.amount), 0))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Payments Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Payment Status
-          </CardTitle>
+          <CardTitle>Payments</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Member</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Last Paid</TableHead>
-                {userType === 'renter' && <TableHead>Actions</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {getMembersWithPayments().map((member) => (
-                <TableRow key={member.id}>
-                  <TableCell className="font-medium">{member.display_name}</TableCell>
-                  <TableCell>{member.email}</TableCell>
-                  <TableCell>
-                    {member.payment ? formatCurrency(member.payment.amount) : '-'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {member.payment && getStatusIcon(member.payment.status)}
-                      {member.payment ? getStatusBadge(member.payment.status) : '-'}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {member.payment ? formatDate(member.payment.due_date) : '-'}
-                  </TableCell>
-                  <TableCell>
-                    {member.payment?.paid_at ? formatDate(member.payment.paid_at) : '-'}
-                  </TableCell>
-                  {userType === 'renter' && (
-                    <TableCell>
-                      <div className="flex gap-2">
-                        {member.payment && member.payment.status !== 'paid' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => sendReminder(member.id, member.email)}
-                          >
-                            <Send className="h-3 w-3 mr-1" />
-                            Remind
-                          </Button>
-                        )}
-                        {member.payment && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedPayment(member.payment);
-                              setIsPaymentModalOpen(true);
-                            }}
-                          >
-                            <FileText className="h-3 w-3 mr-1" />
-                            Details
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          {members.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No household members found.
+          {payments.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Payments Yet</h3>
+              <p className="text-gray-600">
+                {userType === 'renter' 
+                  ? "Generate monthly payments to start collecting rent from residents."
+                  : "No payment requests have been created yet."
+                }
+              </p>
             </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Resident</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Due Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Paid At</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {payments.map((payment) => (
+                  <TableRow key={payment.id}>
+                    <TableCell className="font-medium">
+                      {payment.household_members.display_name}
+                    </TableCell>
+                    <TableCell>{formatCurrency(Number(payment.amount))}</TableCell>
+                    <TableCell>{new Date(payment.due_date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusVariant(payment.status)}>
+                        {getStatusIcon(payment.status)}
+                        {payment.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {payment.paid_at ? new Date(payment.paid_at).toLocaleDateString() : '-'}
+                    </TableCell>
+                    <TableCell>
+                      {userType === 'resident' && payment.status === 'pending' ? (
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => {
+                            setSelectedPayment(payment);
+                            setIsPaymentModalOpen(true);
+                          }}
+                        >
+                          Pay Now
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPayment(payment);
+                            setIsPaymentModalOpen(true);
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1" />
+                          Details
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
@@ -404,7 +376,11 @@ const HouseholdPaymentView: React.FC<HouseholdPaymentViewProps> = ({ household, 
           payment={selectedPayment}
           household={household}
           userType={userType}
-          onPaymentUpdate={fetchPayments}
+          onPaymentUpdate={() => {
+            fetchPayments();
+            setSelectedPayment(null);
+            setIsPaymentModalOpen(false);
+          }}
         />
       )}
     </div>
